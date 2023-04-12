@@ -7,6 +7,8 @@ from helper.bot_config import bot, run as run_bot
 import asyncio
 from pathlib import Path
 import traceback
+from telethon import events
+import os
 
 GROUP_ID = 1830719850
 reports = Path(__file__).parent / 'reports'
@@ -42,7 +44,24 @@ async def report(message: str):
 	
 	await bot.send_message(GROUP_ID, text)
 
+@bot.on(events.NewMessage(pattern='/close'))
+async def close(event):
+	if not event.is_reply:
+		return await event.reply('Use as reply')
+	
+	issue = await event.get_reply_message()
+	if issue.sender != await bot.get_me():
+		return await event.reply('Use reply on bot\'s message')
 
+	try:
+		filename = issue.get_entities_text()[0][1]
+	except BaseException:
+		return await event.reply('Can\'t obtain filename')
+	
+	os.remove(reports / filename)
+	invalidate_index()
+	await issue.delete()
+	await event.delete()
 
 async def exception_handler(exc: BaseException):
 	await report(''.join(traceback.format_exception(exc)))
