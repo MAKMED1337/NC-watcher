@@ -1,0 +1,8 @@
+aiohttp==3.8.3
+base58==2.1.1
+databases==0.7.0
+ed25519==1.5
+fastapi==0.95.0
+pydantic==1.10.4
+SQLAlchemy==1.4.46
+Telethon==1.28.2
