@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body, textarea { font-family: Arial, Helvetica, sans-serif; }
+        button { border: 1px solid black; border-radius: 5px; padding: 5px 15px 5px 15px; }
+    </style>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css'>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js'></script>
+<script src='https://nearcrowd.com/starfish.js?v2=22'></script>
+<script src='https://nearcrowd.com/interactive_coding.js?v2=8'></script>
+<script src='https://nearcrowd.com/pillars.js?v2=19'></script>
+
+<script src='https://nearcrowd.com/cm/lib/codemirror.js'></script>
+<link rel='stylesheet' href='https://nearcrowd.com/cm/lib/codemirror.css'>
+<link rel='stylesheet' href='https://nearcrowd.com/cm/theme/monokai.css'>
+<link rel='stylesheet' href='https://nearcrowd.com/crowdscript_edit.css'>
+<script src='https://nearcrowd.com/cm/mode/crowdscript/crowdscript.js?v2=1'></script>
+<script src='https://nearcrowd.com/crowdscript.js?v2=13'></script>
+<script src='https://nearcrowd.com/crowdscript_edit.js?v2=6'></script>
+<script src='v2.js'></script>
+
+</head>
+
+<body>
+    <div id='divLoading' class='tabGroupMain'><br><br><center>Loading...</center></div>
+    <div id='divSubmitting' class='tabGroupMain' style='display: none'><br><br><center>Submitting...</center></div>
+    <div id='divUpdating' class='tabGroupMain' style='display: none'><br><br><center>Updating...</center></div>
+    <div id='divFailure' class='tabGroupMain' style='display: none'><br><br><center>Something went wrong.<br><br><span style='color: darkred' id='spanErrorMessage'></span><br><br><button onclick='location.reload()'>Reload Page</button></center></div>
+    <div id='divTaskSelection' class='tabGroupMain' style='display:none'> </div>
+    <div id='divTask' class='tabGroupMain' style='display:none'> </div>
+</body>
+</html>

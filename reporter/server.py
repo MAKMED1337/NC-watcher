@@ -1,0 +1,67 @@
+from .client import PORT
+
+from helper.IPC import Server, Connection
+from helper.main_handler import main_handler
+from helper.bot_config import bot, run as run_bot
+
+import asyncio
+from pathlib import Path
+import traceback
+
+# returns path to file
+log_index = 1
+def create_file():
+	global log_index
+	
+	folder = Path(__file__).parent / 'reports'
+	folder.mkdir(parents=True, exist_ok=True)
+
+	while True:
+		path = folder / (str(log_index) + '.txt')
+		if not path.is_file():
+			return path
+		log_index += 1
+
+async def report(message: str):
+	print(message)
+
+	file = create_file()
+	print(file)
+	open(file, 'w', encoding='utf-8').write(message)
+
+	text = f'<code>{file.name}</code>\n\n<code>{{}}</code>'
+	max_message_len = 4096 - len(text) + 2
+
+	message = message.replace('<', '&lt').replace('>', '&gt')
+	text = text.replace('{}', message[:max_message_len])
+	
+	await bot.send_message(1830719850, text)
+
+async def exception_handler(exc: BaseException):
+	await report(''.join(traceback.format_exception(exc)))
+
+
+
+server = Server(PORT, Connection, exception_handler)
+
+@server.on_connect
+async def on_client_connect(conn: Connection):
+	while conn.is_active():
+		msg = await conn.read(None)
+		if msg is None:
+			break
+		await report(msg)
+
+async def start_all():
+	tasks = [asyncio.create_task(i) for i in [run_bot(), server.run()]]
+	done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+	for i in done:
+		exc = i.exception()
+		if exc is not None:
+			raise exc
+
+async def stop_all():
+	await server.close()
+
+if __name__ == '__main__':
+	main_handler(start_all, report, stop_all)

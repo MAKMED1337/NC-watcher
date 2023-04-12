@@ -1,0 +1,6 @@
+**/__pycache__
+*.session
+*.session-journal
+sessionStorage.json
+last_block.txt
+reports/
