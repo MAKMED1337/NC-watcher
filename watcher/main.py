@@ -1,4 +1,7 @@
-from .config import provider, loop
+from helper.main_handler import main_handler
+from helper.report_exceptions import report_exception
+from .config import provider
+
 import asyncio
 from .paymens_resolver import resolve_payments
 from .actions import get_proto_by_enum
@@ -9,7 +12,6 @@ from .unpaid_rewards import UnpaidRewards, ActionEnum
 from .paid_tasks import PaidTasks
 import base64
 import json
-import time
 import traceback
 from .watcher_accounts import WatcherAccounts
 from typing import Any
@@ -120,23 +122,20 @@ async def main():
 	await db_start()
 	await payments.connect()
 
-	try:
-		while True:
-			async with AccountsClient([]) as c:
-				coef = await c.get_coef()
-			
-			await process_blocks()
-			
-			entities = await UnpaidRewards.get_unpaid_actions()
-			tasks = [asyncio.sleep(1)]
-			for entity in entities:
-				tasks.append(resolve_and_pay(entity.account_id, entity.action))
-			await asyncio.gather(*tasks)
-	except BaseException:
-		traceback.print_exc()
-	finally:
-		await provider.close()
+	while True:
+		async with AccountsClient([]) as c:
+			coef = await c.get_coef()
+		
+		await process_blocks()
+		
+		entities = await UnpaidRewards.get_unpaid_actions()
+		tasks = [asyncio.sleep(1)]
+		for entity in entities:
+			tasks.append(resolve_and_pay(entity.account_id, entity.action))
+		await asyncio.gather(*tasks)
 
-#TODO: add reporter
+async def stop():
+	await provider.close()
+
 if __name__ == '__main__':
-	loop.run_until_complete(main())
+	main_handler(main, report_exception, provider.close)
