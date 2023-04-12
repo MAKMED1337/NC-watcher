@@ -103,7 +103,6 @@ async def process_blocks() -> int:
 					args = json.loads(base64.b64decode(f['args']).decode())
 					process_reward_tasks.append(process_reward(transaction['hash'], args))
 	await asyncio.gather(*process_reward_tasks)
-	
 	return len(blocks)
 
 async def resolve_and_pay(account_id: str, action: ActionEnum):
