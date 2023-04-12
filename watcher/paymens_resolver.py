@@ -15,11 +15,9 @@ async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IActi
 				G.add_edge(i, n + j)
 	
 	mt = G.run()
-	for i in range(m):
-		if mt[i + n] == -1:
-			return
-	
+	#TODO proper fix and calculation
 	result = []
 	for i in range(m):
-		result.append((actions[mt[i + n]], rewards[i]))
+		if mt[i + n] != -1:
+			result.append((actions[mt[i + n]], rewards[i]))
 	return result
