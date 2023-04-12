@@ -44,7 +44,7 @@ async def report(message: str):
 	
 	await bot.send_message(GROUP_ID, text)
 
-@bot.on(events.NewMessage(pattern='/close'))
+@bot.on(events.NewMessage(pattern='/close$'))
 async def close(event):
 	if not event.is_reply:
 		return await event.reply('Use as reply')
@@ -62,6 +62,11 @@ async def close(event):
 	invalidate_index()
 	await issue.delete()
 	await event.delete()
+
+@bot.on(events.NewMessage(pattern='/close_all$'))
+async def close_all(event):
+	#TODO implement
+	return
 
 async def exception_handler(exc: BaseException):
 	await report(''.join(traceback.format_exception(exc)))
