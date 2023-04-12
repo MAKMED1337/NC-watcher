@@ -8,16 +8,21 @@ import asyncio
 from pathlib import Path
 import traceback
 
-# returns path to file
+GROUP_ID = 1830719850
+reports = Path(__file__).parent / 'reports'
+
 log_index = 1
+def invalidate_index():
+	global log_index
+	log_index = 1
+
+# returns path to file
 def create_file():
 	global log_index
 	
-	folder = Path(__file__).parent / 'reports'
-	folder.mkdir(parents=True, exist_ok=True)
-
+	reports.mkdir(parents=True, exist_ok=True)
 	while True:
-		path = folder / (str(log_index) + '.txt')
+		path = reports / (str(log_index) + '.txt')
 		if not path.is_file():
 			return path
 		log_index += 1
@@ -35,12 +40,12 @@ async def report(message: str):
 	message = message.replace('<', '&lt').replace('>', '&gt')
 	text = text.replace('{}', message[:max_message_len])
 	
-	await bot.send_message(1830719850, text)
+	await bot.send_message(GROUP_ID, text)
+
+
 
 async def exception_handler(exc: BaseException):
 	await report(''.join(traceback.format_exception(exc)))
-
-
 
 server = Server(PORT, Connection, exception_handler)
 
