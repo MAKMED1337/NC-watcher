@@ -2,7 +2,7 @@ from .client import PORT
 
 from helper.IPC import Server, Connection
 from helper.main_handler import main_handler
-from helper.report_exceptions import exception_handler
+from helper.report_exceptions import report_exception
 from helper.bot_config import bot, run as run_bot
 
 import asyncio
@@ -11,7 +11,7 @@ from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
 from dataclasses import asdict
 import html
 
-server = Server(PORT, Connection, exception_handler)
+server = Server(PORT, Connection, report_exception)
 
 @server.on_connect
 async def on_client_connect(conn: Connection):
@@ -60,4 +60,4 @@ async def stop_all():
 	await server.close()
 
 if __name__ == '__main__':
-	main_handler(start_all, exception_handler, stop_all)
+	main_handler(start_all, report_exception, stop_all)

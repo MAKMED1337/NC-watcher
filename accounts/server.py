@@ -2,7 +2,7 @@ from .client import PORT
 
 from helper.IPC import Server, FuncCall, Connection, Response, Packet
 from helper.main_handler import main_handler
-from helper.report_exceptions import exception_handler
+from helper.report_exceptions import report_exception
 from reporter.client import ReporterClient
 
 from .nearcrowd_account import NearCrowdAccount, V2
@@ -12,7 +12,7 @@ from .locks import get_lock
 import asyncio
 from typing import Any
 
-server = Server(PORT, Connection, exception_handler)
+server = Server(PORT, Connection, report_exception)
 
 async def query(account: NearCrowdAccount, q: V2) -> str:
 	return await account.query(q)
@@ -133,4 +133,4 @@ async def start():
 	await server.run()
 
 if __name__ == '__main__':
-	main_handler(start, exception_handler, server.close)
+	main_handler(start, report_exception, server.close)
