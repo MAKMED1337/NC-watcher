@@ -61,6 +61,7 @@ class AccountsClient(FuncClient):
 		self.connected_ids = ids
 		return ids
 
+	#create or update key
 	async def create_account(self, account_id: str, private_key: str, on_exception: Any=Exception) -> bool:
 		return await self.call(on_exception, 'create_account', account_id, private_key)
 

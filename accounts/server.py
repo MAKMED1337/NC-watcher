@@ -3,7 +3,6 @@ from .client import PORT
 from helper.IPC import Server, FuncCall, Connection, Response, Packet
 from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
-from reporter.client import ReporterClient
 
 from .nearcrowd_account import NearCrowdAccount, V2
 from .accounts_db import Accounts
@@ -22,9 +21,6 @@ async def delete_account(account_id: str):
 
 async def create_account(account_id: str, private_key: str) -> bool:
 	try:
-		if await Accounts.is_connected(account_id):
-			return False
-
 		account = NearCrowdAccount(account_id, private_key)
 		if not await account.check_account():
 			return False
@@ -38,7 +34,7 @@ async def get_account(account_id: str) -> NearCrowdAccount | None:
 	try:
 		private_key = await Accounts.get_key(account_id)
 		return NearCrowdAccount(account_id, private_key)
-	except BaseException:
+	except Exception:
 		return None
 
 async def is_connected(account_id: str) -> bool:

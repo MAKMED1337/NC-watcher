@@ -1,6 +1,7 @@
 from helper.db_config import Base, db
 from sqlalchemy import Column, VARCHAR
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, delete
+from sqlalchemy.dialects.mysql import insert
 
 class Accounts(Base):
 	__tablename__ = 'Accounts'
@@ -17,7 +18,7 @@ class Accounts(Base):
 
 	@staticmethod
 	async def add_account(account_id: str, key: str):
-		await db.execute(insert(Accounts).values((account_id, key)))
+		await db.execute(insert(Accounts).values((account_id, key)).on_duplicate_key_update(private_key=key))
 
 	@staticmethod
 	async def delete_account(account_id: str):
