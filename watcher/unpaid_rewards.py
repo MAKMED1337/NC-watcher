@@ -31,6 +31,10 @@ class UnpaidRewards(Base):
 		await db.execute(delete(UnpaidRewards).where(and_(UnpaidRewards.account_id == account_id, UnpaidRewards.action == action)))
 
 	@staticmethod
+	async def remove_by_tx(tx_id: str, account_id: str):
+		await db.execute(delete(UnpaidRewards).where(and_(UnpaidRewards.tx_id == tx_id, UnpaidRewards.account_id == account_id)))
+
+	@staticmethod
 	async def clear(account_id: str):
 		await db.execute(delete(UnpaidRewards).where(and_(UnpaidRewards.account_id == account_id)))
 

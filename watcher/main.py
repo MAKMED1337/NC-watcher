@@ -111,9 +111,9 @@ async def resolve_and_pay(account_id: str, action: ActionEnum):
 	if result is None:
 		return
 	
-	await UnpaidRewards.remove(account_id, action)
 	for action, reward in result:
 		await payments.add_payment(action, reward)
+		await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
 		await PaidTasks.add(account_id, action.info.task_id)
 
 async def main():
