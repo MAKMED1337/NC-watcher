@@ -103,6 +103,9 @@ class AccountsClient(FuncClient):
 	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
 		def callback(r):
 			r = json_or_none(r)
+			if r is None:
+				return None
+			
 			for i in range(len(r)):
 				r[i]['mode'] = mode
 			return [ListTaskInfo(i) for i in r]
