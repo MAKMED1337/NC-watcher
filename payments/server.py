@@ -8,7 +8,6 @@ from helper.bot_config import bot, run as run_bot
 import asyncio
 from watcher.actions import IAction, get_payment_cost, modes, qualities
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
-from dataclasses import asdict
 import html
 
 server = Server(PORT, Connection, report_exception)
