@@ -1,11 +1,9 @@
 from .client import PORT
 
 from helper.IPC import Server, Connection
-from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
-from helper.bot_config import bot, run as run_bot
+from helper.bot_config import bot
 
-import asyncio
 from watcher.actions import IAction, get_payment_cost, modes, qualities
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
 import html
@@ -46,17 +44,3 @@ async def on_client_connect(conn: Connection):
 
 		text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
 		await bot.send_message('@makmed1337', text[:4096])
-
-async def start_all():
-	tasks = [asyncio.create_task(i) for i in [run_bot(), server.run()]]
-	done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
-	for i in done:
-		exc = i.exception()
-		if exc is not None:
-			raise exc
-
-async def stop_all():
-	await server.close()
-
-if __name__ == '__main__':
-	main_handler(start_all, report_exception, stop_all)
