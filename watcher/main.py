@@ -13,7 +13,7 @@ from .paid_tasks import PaidTasks
 import base64
 import json
 import traceback
-from .watcher_accounts import WatcherAccounts
+from .connected_accounts import ConnectedAccounts
 from typing import Any
 from helper.db_config import start as db_start
 from accounts.client import AccountsClient
@@ -64,7 +64,7 @@ async def get_new_blocks(last_block_id: int) -> list[dict]:
 	return list(filter(None, result))
 
 async def add_reward_if_connected(tx_id: str, account_id: str, cost: float, action: ActionEnum, adjustment: int = None):
-	if await WatcherAccounts.is_connected(account_id):
+	if await ConnectedAccounts.is_connected(account_id):
 		await UnpaidRewards.add(tx_id, account_id, cost, coef, action, adjustment)
 
 async def process_reward(tx_id: str, args: dict):

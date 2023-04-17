@@ -1,7 +1,7 @@
 import asyncio
 from accounts.client import SingleAccountsClient
 from .paid_tasks import PaidTasks
-from .watcher_accounts import WatcherAccounts
+from .connected_accounts import ConnectedAccounts
 from helper.db_config import start as db_start
 from .actions import modes
 from pathlib import Path
@@ -40,7 +40,7 @@ async def add_account(account_id: str):
 		await asyncio.gather(*coros)
 	
 	await UnpaidRewards.clear(account_id)
-	await WatcherAccounts.add(account_id)
+	await ConnectedAccounts.add(793975166, account_id)
 
 async def main():
 	await db_start()
