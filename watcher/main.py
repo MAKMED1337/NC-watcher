@@ -7,7 +7,7 @@ from .paymens_resolver import resolve_payments
 from .actions import get_proto_by_enum
 from near.providers import FinalityTypes, JsonProviderError
 from .last_block import *
-from payments.client import PaymentsClient
+from bot.client import BotClient
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 from .paid_tasks import PaidTasks
 import base64
@@ -20,7 +20,7 @@ from accounts.client import AccountsClient
 import aiohttp
 
 coef = None
-payments = PaymentsClient()
+bot = BotClient()
 
 async def auto_retry(func, *args, **kwargs) -> Any:
 	retries = 100
@@ -112,14 +112,14 @@ async def resolve_and_pay(account_id: str, action: ActionEnum):
 		return
 	
 	for action, reward in result:
-		await payments.add_payment(action, reward)
+		await bot.add_payment(action, reward)
 		await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
 		await PaidTasks.add(account_id, action.info.task_id)
 
 async def main():
 	global coef
 	await db_start()
-	await payments.connect()
+	await bot.connect()
 
 	while True:
 		async with AccountsClient([]) as c:

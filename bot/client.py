@@ -6,7 +6,7 @@ from helper.IPC import Client
 from watcher.actions import IAction
 from watcher.unpaid_rewards import UnpaidRewards
 
-class PaymentsClient(Client):
+class BotClient(Client):
 	def __init__(self):
 		super().__init__(PORT)
 
