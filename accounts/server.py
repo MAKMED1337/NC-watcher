@@ -84,7 +84,7 @@ async def get_locked_accounts(account_ids: list[str] | None) -> list[NearCrowdAc
 def get_ids(accounts: list[NearCrowdAccount]) -> list[str]:
 	return [i.account_id for i in accounts]
 
-class Server:
+class ConnectionHandler:
 	def __init__(self, conn: Connection) -> None:
 		self.conn = conn
 		self.accounts = []
@@ -121,8 +121,8 @@ class Server:
 
 @server.on_connect
 async def on_client_connect(conn: Connection):
-	s = Server(conn)
-	await s.proceed_client()
+	c = ConnectionHandler(conn)
+	await c.proceed_client()
 
 async def start():
 	await db_config.start()
