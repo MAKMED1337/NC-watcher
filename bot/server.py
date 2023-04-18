@@ -54,4 +54,4 @@ async def on_client_connect(conn: Connection):
 		assert call.name in ('notify_payment', 'delete_and_notify')
 
 		resp = Response(conn, packet)
-		await resp.respond(globals()[call.name])
+		await resp.respond(await call.apply(globals()[call.name]))
