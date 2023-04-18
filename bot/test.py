@@ -17,14 +17,14 @@ async def main():
 
 		async with db.transaction():
 			await UnpaidRewards.add('TEST', 'TEST', 0, 0, ActionEnum.review, 0)
-			await p.add_payment(r, (await UnpaidRewards.get('TEST', ActionEnum.review))[0])
+			await p.notify_payment(r, (await UnpaidRewards.get('TEST', ActionEnum.review))[0])
 			await UnpaidRewards.clear('TEST')
 
 		t = Task()
 		t.info = task_info
 		async with db.transaction():
 			await UnpaidRewards.add('TEST', 'TEST', 0, 0, ActionEnum.task, 0)
-			await p.add_payment(r, (await UnpaidRewards.get('TEST', ActionEnum.task))[0])
+			await p.notify_payment(r, (await UnpaidRewards.get('TEST', ActionEnum.task))[0])
 			await UnpaidRewards.clear('TEST')
 
 if __name__ == '__main__':
