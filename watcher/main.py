@@ -110,7 +110,7 @@ async def resolve_and_pay(account_id: str, action: ActionEnum):
 		return
 	
 	for action, reward in result:
-		await bot.add_payment(action, reward)
+		await bot.notify_payment(action, reward)
 		await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
 		await PaidTasks.add(account_id, action.info.task_id)
 

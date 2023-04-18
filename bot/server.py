@@ -11,7 +11,7 @@ import html
 
 server = Server(PORT, Connection, report_exception)
 
-async def delete_and_notify(action: IAction, reward: UnpaidRewards):
+async def notify_payment(action: IAction, reward: UnpaidRewards):
 	print(action, reward)
 	assert isinstance(action, IAction), type(action)
 	#assert isinstance(reward, UnpaidRewards), type(reward)       <- 'sqlalchemy.engine.row.Row'
@@ -39,7 +39,7 @@ async def delete_and_notify(action: IAction, reward: UnpaidRewards):
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
 	await bot.send_message('@makmed1337', text[:4096])
 
-async def delete_account(account_id: str):
+async def delete_and_notify(account_id: str):
 	await ConnectedAccounts.delete_account(account_id)
 	await bot.send_message('@makmed1337', f'Account was deleted: <code>{account_id}</code>')
 
