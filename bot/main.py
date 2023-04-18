@@ -1,6 +1,6 @@
 from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
-from helper.bot_config import bot, start as start_bot, run as run_bot
+from helper.bot_config import bot, start as start_bot
 
 from .server import server
 
