@@ -2,6 +2,7 @@ from helper.db_config import Base, db, fetch_all_column
 from sqlalchemy import Column, BigInteger, ForeignKey
 from sqlalchemy import select, delete, and_
 from sqlalchemy.dialects.mysql import insert
+from accounts.accounts_db import Accounts
 
 #FIXME: multiple users could change key, but they need to have access only to their one
 class ConnectedAccounts(Base):
@@ -19,7 +20,7 @@ class ConnectedAccounts(Base):
 
 	@staticmethod
 	async def add(tg_id: int, account_id: str):
-		await db.execute(insert(ConnectedAccounts).values((tg_id, account_id)).on_duplicate_key_update())
+		await db.execute(insert(ConnectedAccounts).values((tg_id, account_id)).on_duplicate_key_update(tg_id=tg_id))
 
 	@staticmethod
 	async def remove(tg_id: int, account_id: str):

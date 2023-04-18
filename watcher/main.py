@@ -1,26 +1,24 @@
 from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
-from .config import provider
+from .config import provider, bot
 
 import asyncio
 from .paymens_resolver import resolve_payments
 from .actions import get_proto_by_enum
 from near.providers import FinalityTypes, JsonProviderError
 from .last_block import *
-from bot.client import BotClient
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 from .paid_tasks import PaidTasks
 import base64
 import json
 import traceback
-from .connected_accounts import ConnectedAccounts
+from bot.connected_accounts import ConnectedAccounts
 from typing import Any
 from helper.db_config import start as db_start
 from accounts.client import AccountsClient
 import aiohttp
 
 coef = None
-bot = BotClient()
 
 async def auto_retry(func, *args, **kwargs) -> Any:
 	retries = 100
