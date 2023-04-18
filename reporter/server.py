@@ -2,7 +2,7 @@ from .client import PORT
 
 from helper.IPC import Server, Connection
 from helper.main_handler import main_handler
-from helper.bot_config import bot, run as run_bot
+from helper.bot_config import bot, run as run_bot, start as start_bot
 
 import asyncio
 from pathlib import Path
@@ -82,7 +82,8 @@ async def on_client_connect(conn: Connection):
 		await report(msg)
 
 async def start_all():
-	tasks = [asyncio.create_task(i) for i in [run_bot(), server.run()]]
+	await start_bot()
+	tasks = [asyncio.create_task(i) for i in [bot.run_until_disconnected(), server.run()]]
 	done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
 	for i in done:
 		exc = i.exception()
