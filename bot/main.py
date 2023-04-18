@@ -1,12 +1,14 @@
 from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
 from helper.bot_config import bot, start as start_bot
+from helper.db_config import start as start_db
 
 from .server import server
 
 import asyncio
 
 async def start_all():
+	await start_db()
 	await start_bot()
 	tasks = [asyncio.create_task(i) for i in [bot.run_until_disconnected(), server.run()]]
 	done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
