@@ -41,6 +41,7 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 
 async def delete_and_notify(account_id: str):
 	await ConnectedAccounts.delete_account(account_id)
+	await UnpaidRewards.clear(account_id)
 	await bot.send_message('@makmed1337', f'Account was deleted: <code>{account_id}</code>')
 
 @server.on_connect
