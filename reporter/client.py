@@ -10,6 +10,7 @@ class ReporterClient(Client):
 		super().__init__(PORT)
 
 	async def report(self, message: str):
+		print(message)
 		await self.send(message)
 	
 	async def report_exception(self, exc: Exception):
