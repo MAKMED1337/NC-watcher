@@ -15,11 +15,6 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 	print(action, reward)
 	assert isinstance(action, IAction), type(action)
 	#assert isinstance(reward, UnpaidRewards), type(reward)       <- 'sqlalchemy.engine.row.Row'
-	action: IAction
-	reward: UnpaidRewards
-
-	#text = f'raw:\n\n<code>{reward.tx_id}</code>\ncost: <code>{get_payment_cost(reward)}</code>\n\n<pre>{reward._mapping}</pre>\n\n<pre>{asdict(action.info)}</pre>'
-	#await bot.send_message('@makmed1337', text[:4096])
 
 	info = action.info
 	text = f'TX: <code>{reward.tx_id}</code>\n\n'
