@@ -1,31 +1,48 @@
 from .actions import IAction, modes
 from accounts.client import SingleAccountsClient
-from .paid_tasks import PaidTasks
+from .last_task_state import LastTaskState
 from .config import bot
 import asyncio
+from collections.abc import Coroutine
 
-async def get_unpaid_tasks_for_mode(account: SingleAccountsClient, mode: int, paid: set, action: IAction) -> list[IAction]:
-	tasks = [r for r in await account.get_task_list(mode) if r.task_id not in paid]
+#returns diff and new state
+async def get_diff(action: Coroutine[IAction], state: LastTaskState) -> tuple[list[IAction], LastTaskState]:
+	action: IAction = await action
+	diff = action.diff(state)
+	state.ended = action.has_ended()
+	state.resubmits = action.info.resubmits
+	return diff, state
+
+async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states: dict[int, LastTaskState], action_type: IAction) -> tuple[list[IAction], list[LastTaskState]]:
+	ended_ids = set([i.task_id for i in states.values() if i.ended])
+	tasks = [r for r in await account.get_task_list(mode) if r.task_id not in ended_ids]
 	
-	actions = []
+	updates = []
 	for info in tasks:
-		if not action.is_proto(info):
+		if not action_type.is_proto(info):
 			continue
 		
-		actions.append(action.load(account, info))
+		state = states.get(info.task_id, LastTaskState(account_id=account.account_id, task_id=info.task_id, ended=False))
+		updates.append(get_diff(action_type.load(account, info), state))
 	
-	actions = await asyncio.gather(*actions)
-	return [i for i in actions if i.has_ended()]
+	updates = await asyncio.gather(*updates)
+	diff = []
+	for i, _ in updates:
+		diff.extend(i)
+	return diff, [i[1] for i in updates]
 
-async def get_unpaid_actions(account_id: str, action: IAction) -> list[IAction]:
+async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAction], LastTaskState]:
 	async with SingleAccountsClient(account_id) as account:
 		if not account.connected:
 			await bot.delete_and_notify(account_id)
 			return {}
 
-		paid = set(await PaidTasks.get(account_id))
+		states = await LastTaskState.get(account_id)
+		states = {i.task_id: i for i in states}
 
-		unpaid = []
-		for r in await asyncio.gather(*[get_unpaid_tasks_for_mode(account, mode, paid, action) for mode in modes]):
-			unpaid.extend(r)
-		return unpaid
+		diff = []
+		new_states = []
+		for r in await asyncio.gather(*[get_updates_for_mode(account, mode, states, action) for mode in modes]):
+			diff.extend(r[0])
+			new_states.extend(r[1])
+		return diff, new_states

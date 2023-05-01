@@ -8,14 +8,14 @@ from .actions import get_proto_by_enum
 from near.providers import FinalityTypes, JsonProviderError
 from .last_block import *
 from .unpaid_rewards import UnpaidRewards, ActionEnum
-from .paid_tasks import PaidTasks
 import base64
 import json
 import traceback
 from bot.connected_accounts import ConnectedAccounts
 from typing import Any
-from helper.db_config import start as db_start
+from helper.db_config import start as db_start, to_dict
 from accounts.client import AccountsClient
+from.last_task_state import LastTaskState
 import aiohttp
 
 coef = None
@@ -106,13 +106,10 @@ async def process_blocks() -> int:
 async def resolve_and_pay(account_id: str, action: ActionEnum):
 	result = await resolve_payments(account_id, get_proto_by_enum(action))
 	
-	if result is None:
-		return
-	
-	for action, reward in result:
-		await bot.notify_payment(action, reward)
+	for action, reward, state in result:
+		await bot.notify_payment(action, reward._mapping)
 		await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
-		await PaidTasks.add(account_id, action.info.task_id)
+		await LastTaskState.update(**to_dict(state))
 
 async def main():
 	global coef

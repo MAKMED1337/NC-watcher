@@ -1,13 +1,17 @@
-from .action_getter import get_unpaid_actions
+from .action_getter import get_action_updates
 from .unpaid_rewards import UnpaidRewards
+from .last_task_state import LastTaskState
 from .actions import IAction
 from .kuhn import Kuhn
 
-async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IAction, UnpaidRewards]]:
+async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IAction, UnpaidRewards, LastTaskState]]:
 	rewards = await UnpaidRewards.get(account_id, action.get_enum())
-	actions = await get_unpaid_actions(account_id, action)
+	actions, states = await get_action_updates(account_id, action)
 
 	n, m = len(actions), len(rewards)
+	if n != m:
+		return []
+
 	G = Kuhn(n + m, n)
 	for i in range(n):
 		for j in range(m):
@@ -15,9 +19,8 @@ async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IActi
 				G.add_edge(i, n + j)
 	
 	mt = G.run()
-	#TODO proper fix and calculation
 	result = []
 	for i in range(m):
-		if mt[i + n] != -1:
-			result.append((actions[mt[i + n]], rewards[i]))
+		j = mt[i + n]
+		result.append((actions[j], rewards[i], states[j]))
 	return result

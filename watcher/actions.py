@@ -1,6 +1,7 @@
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 from accounts.client import SingleAccountsClient, ListTaskInfo
 from dataclasses import dataclass, asdict, field
+from .last_task_state import LastTaskState
 
 qualities = ['Low Quality', 'Good', 'Outstanding', '', 'Has Mistakes']
 verdicts = ['Reviewed, Rejected', 'Reviewed, Accepted', 'Performed']
@@ -69,6 +70,10 @@ class IAction:
 
 	def has_ended(self) -> bool:
 		raise NotImplementedError
+	
+	def diff(self, state: LastTaskState) -> list['IAction']:
+		assert state.ended == False
+		raise NotImplementedError
 
 	@staticmethod
 	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'IAction':
@@ -93,7 +98,23 @@ class Task(IAction):
 
 	def has_ended(self) -> bool:
 		info = self.info
-		return info.status in (2, 3) or (info.status == 4 and info.resubmits == modes[info.mode].resubmits)
+		return info.status in (2, 4)
+
+	def diff(self, state: LastTaskState) -> list['Task']:
+		assert state.ended == False
+		resubmits = state.resubmits or 0
+
+		res = []
+		for resubmit in range(resubmits + 1, self.info.resubmits + 1):
+			t = self
+			t.info.resubmits = resubmit
+			t.info.status = 3
+			res.append(t)
+		
+		if self.info.status == 2:
+			res.append(self)
+		
+		return res
 
 	@staticmethod
 	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Task':
@@ -157,6 +178,10 @@ class Review(IAction):
 		before_resubmit = review['before_resubmit'] if review is not None else False
 		return self.info.status != 1 or before_resubmit
 	
+	def diff(self, state: LastTaskState) -> list['Review']:
+		assert state.ended == False
+		return [self] if self.has_ended() else []
+
 	@staticmethod
 	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
 		obj = Review()
