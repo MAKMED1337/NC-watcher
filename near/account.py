@@ -32,6 +32,8 @@ class Account(object):
 	async def start(self):
 		self._account: dict = await self._provider.get_account(self._account_id)
 		self._access_key: dict = await self._provider.get_access_key(self._account_id, self._signer.key_pair.encoded_public_key())
+		if 'error' in self._access_key:
+			raise ViewFunctionError(self._access_key['error'])
 
 	async def _sign_and_submit_tx(self, receiver_id: str, actions: list[transactions.Action]) -> dict:
 		serialized_tx = await self.get_tx(receiver_id, actions)
@@ -117,10 +119,10 @@ class Account(object):
 			initial_balance: int
 	) -> dict:
 		actions = [
-					  transactions.create_create_account_action(),
-					  transactions.create_transfer_action(initial_balance),
-					  transactions.create_deploy_contract_action(contract_code)
-				  ] + ([transactions.create_full_access_key_action(public_key)] if public_key is not None else [])
+			transactions.create_create_account_action(),
+			transactions.create_transfer_action(initial_balance),
+			transactions.create_deploy_contract_action(contract_code)
+		] + ([transactions.create_full_access_key_action(public_key)] if public_key is not None else [])
 		return await self._sign_and_submit_tx(contract_id, actions)
 
 	async def create_deploy_and_init_contract(
@@ -135,11 +137,11 @@ class Account(object):
 	) -> dict:
 		args = json.dumps(args).encode('utf8')
 		actions = [
-					  transactions.create_create_account_action(),
-					  transactions.create_transfer_action(initial_balance),
-					  transactions.create_deploy_contract_action(contract_code),
-					  transactions.create_function_call_action(init_method_name, args, gas, 0)
-				  ] + ([transactions.create_full_access_key_action(public_key)] if public_key is not None else [])
+			transactions.create_create_account_action(),
+			transactions.create_transfer_action(initial_balance),
+			transactions.create_deploy_contract_action(contract_code),
+			transactions.create_function_call_action(init_method_name, args, gas, 0)
+		] + ([transactions.create_full_access_key_action(public_key)] if public_key is not None else [])
 		return await self._sign_and_submit_tx(contract_id, actions)
 
 	async def view_function(self, contract_id: str, method_name: str, args: Optional[dict] = None) -> dict:
