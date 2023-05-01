@@ -17,7 +17,7 @@ connection_url = URL.create(
 
 Base = declarative_base()
 engine = sqlalchemy.create_engine(connection_url)
-db = databases.Database(str(connection_url.set(drivername='mysql+asyncmy', query={'pool_recycle': '3600'})))
+db = databases.Database(connection_url.set(drivername='mysql+asyncmy', query={'pool_recycle': '3600'}).render_as_string(False))
 
 async def fetch_all_column(query: ClauseElement | str, values: dict = None) -> list[Record]:
 	return [r[0] for r in await db.fetch_all(query, values)]
