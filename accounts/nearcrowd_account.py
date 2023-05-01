@@ -56,7 +56,7 @@ class NearCrowdAccount:
 		async with JsonProvider('https://rpc.mainnet.near.org') as provider:
 			account = Account(provider, self._signer)
 			await account.start()
-			return await account.view_function(contract_id, 'is_account_whitelisted', {'account_id': self._signer.account_id}) #FIXME test view_function
+			return await account.view_function(contract_id, 'is_account_whitelisted', {'account_id': self._signer.account_id})
 
 	# MAYBE add status ?
 	async def _query_one_try(self, q: V2) -> str:

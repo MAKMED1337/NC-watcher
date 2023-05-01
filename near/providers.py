@@ -48,12 +48,10 @@ class JsonProvider(object):
 			return content['result']
 
 	async def send_tx(self, signed_tx: bytes, timeout: aiohttp.ClientTimeout = None) -> dict:
-		return await self.json_rpc('broadcast_tx_async',
-							 [base64.b64encode(signed_tx).decode('utf8')], timeout)
+		return await self.json_rpc('broadcast_tx_async', [base64.b64encode(signed_tx).decode('utf8')], timeout)
 
 	async def send_tx_and_wait(self, signed_tx: bytes, timeout: aiohttp.ClientTimeout = None) -> dict:
-		return await self.json_rpc('broadcast_tx_commit',
-							 [base64.b64encode(signed_tx).decode('utf8')], timeout)
+		return await self.json_rpc('broadcast_tx_commit', [base64.b64encode(signed_tx).decode('utf8')], timeout)
 
 	async def get_status(self, timeout: aiohttp.ClientTimeout = None) -> dict:
 		async with self._session.get(f'{self.rpc_addr()}/status', timeout=timeout) as resp:
@@ -73,10 +71,10 @@ class JsonProvider(object):
 			timeout: aiohttp.ClientTimeout = None
 	) -> dict:
 		return await self.query({
-				'request_type': 'view_account',
-				'account_id': account_id,
-				'finality': finality
-			}, timeout)
+			'request_type': 'view_account',
+			'account_id': account_id,
+			'finality': finality
+		}, timeout)
 
 	async def get_access_key_list(
 			self,
@@ -85,10 +83,10 @@ class JsonProvider(object):
 			timeout: aiohttp.ClientTimeout = None
 	) -> dict:
 		return await self.query({
-				'request_type': 'view_access_key_list',
-				'account_id': account_id,
-				'finality': finality
-			}, timeout)
+			'request_type': 'view_access_key_list',
+			'account_id': account_id,
+			'finality': finality
+		}, timeout)
 
 	async def get_access_key(
 			self,
@@ -98,11 +96,11 @@ class JsonProvider(object):
 			timeout: aiohttp.ClientTimeout = None
 	) -> dict:
 		return await self.query({
-				'request_type': 'view_access_key',
-				'account_id': account_id,
-				'public_key': public_key,
-				'finality': finality
-			}, timeout)
+			'request_type': 'view_access_key',
+			'account_id': account_id,
+			'public_key': public_key,
+			'finality': finality
+		}, timeout)
 
 	async def view_call(
 			self,
@@ -113,12 +111,12 @@ class JsonProvider(object):
 			timeout: aiohttp.ClientTimeout = None
 	) -> dict:
 		return await self.query({
-				'request_type': 'call_function',
-				'account_id': account_id,
-				'method_name': method_name,
-				'args_base64': base64.b64encode(args).decode('utf8'),
-				'finality': finality
-			}, timeout)
+			'request_type': 'call_function',
+			'account_id': account_id,
+			'method_name': method_name,
+			'args_base64': base64.b64encode(args).decode('utf8'),
+			'finality': finality
+		}, timeout)
 
 	async def get_block(
 			self,
