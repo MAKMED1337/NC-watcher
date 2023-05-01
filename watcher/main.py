@@ -25,7 +25,7 @@ async def auto_retry(func, *args, **kwargs) -> Any:
 	for r in range(retries):
 		try:
 			return await func(*args, **kwargs)
-		except BaseException:
+		except Exception:
 			if r == retries - 1:
 				raise
 
@@ -40,7 +40,7 @@ async def get_block_by_id(id: int) -> dict:
 			return None
 		except (aiohttp.ClientResponseError, aiohttp.ClientOSError):
 			pass
-		except BaseException as e:
+		except Exception as e:
 			traceback.print_exception(e)
 		await asyncio.sleep(1)
 	

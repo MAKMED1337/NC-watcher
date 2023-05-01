@@ -8,9 +8,7 @@ asyncio.set_event_loop(loop)
 async def _main(main, exception_handler, clean_up):
 	try:
 		await main()
-	except asyncio.CancelledError:
-		pass
-	except BaseException as e:
+	except Exception as e:
 		await exception_handler(e)
 	finally:
 		await clean_up()

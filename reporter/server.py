@@ -55,7 +55,7 @@ async def close(event):
 
 	try:
 		filename = issue.get_entities_text()[0][1]
-	except BaseException:
+	except Exception:
 		return await event.reply('Can\'t obtain filename')
 	
 	os.remove(reports / filename)
@@ -68,7 +68,7 @@ async def close_all(event):
 	#TODO implement
 	return
 
-async def exception_handler(exc: BaseException):
+async def exception_handler(exc: Exception):
 	await report(''.join(traceback.format_exception(exc)))
 
 server = Server(PORT, Connection, exception_handler)

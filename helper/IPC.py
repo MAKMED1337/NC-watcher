@@ -112,7 +112,7 @@ class FuncConnection(_LoopBoundMixin):
 		if not fut.done():
 			fut.set_result(data)
 	
-	def _set_exception(self, exc: BaseException):
+	def _set_exception(self, exc: Exception):
 		for k, v in self._waiters.items():
 			v.set_exception(exc)
 
@@ -120,7 +120,7 @@ class FuncConnection(_LoopBoundMixin):
 		async with self._read_lock:
 			try:
 				packet: Packet = await self._conn.read()
-			except BaseException as e:
+			except Exception as e:
 				self._set_exception(e)
 				if on_exception == Exception:
 					raise
@@ -136,7 +136,7 @@ class FuncConnection(_LoopBoundMixin):
 
 		try:
 			data = await fut
-		except BaseException:
+		except Exception:
 			if on_exception == Exception:
 				raise
 			return on_exception
