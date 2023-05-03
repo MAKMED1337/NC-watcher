@@ -22,5 +22,8 @@ async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IActi
 	result = []
 	for i in range(m):
 		j = mt[i + n]
+		if j == -1:
+			return []
+		
 		result.append((actions[j], rewards[i], states[j]))
 	return result
