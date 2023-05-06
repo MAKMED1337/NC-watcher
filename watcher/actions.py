@@ -2,6 +2,7 @@ from .unpaid_rewards import UnpaidRewards, ActionEnum
 from accounts.client import SingleAccountsClient, ListTaskInfo
 from dataclasses import dataclass, asdict, field
 from .last_task_state import LastTaskState
+import copy
 
 qualities = ['Low Quality', 'Good', 'Outstanding', '', 'Has Mistakes']
 verdicts = ['Reviewed, Rejected', 'Reviewed, Accepted', 'Performed']
@@ -60,6 +61,10 @@ def feq(a: float, b: float) -> bool:
 class IAction:
 	info: TaskInfo
 
+	@property
+	def task_id(self) -> int:
+		return self.info.task_id
+
 	@staticmethod
 	def is_proto(info: ListTaskInfo) -> bool:
 		raise NotImplementedError
@@ -106,7 +111,7 @@ class Task(IAction):
 
 		res = []
 		for resubmit in range(resubmits + 1, self.info.resubmits + 1):
-			t = self
+			t = copy.deepcopy(self)
 			t.info.resubmits = resubmit
 			t.info.status = 3
 			res.append(t)
