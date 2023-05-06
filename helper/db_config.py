@@ -24,7 +24,7 @@ async def fetch_all_column(query: ClauseElement | str, values: dict = None) -> l
 
 def to_dict(table: Base) -> dict:
 	res = table.__dict__
-	res.pop('_sa_instance_state')
+	res.pop('_sa_instance_state', None)
 	return res
 
 async def start():
