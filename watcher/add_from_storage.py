@@ -47,7 +47,7 @@ async def add_account(account_id: str):
 
 		actions: list[IAction] = await asyncio.gather(*actions)
 
-	await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.info.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
+	await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
 	await UnpaidRewards.clear(account_id)
 	await ConnectedAccounts.add(793975166, account_id)
 	print('OK:', account_id)
