@@ -2,7 +2,7 @@ import asyncio
 from accounts.client import SingleAccountsClient
 from .last_task_state import LastTaskState
 from bot.connected_accounts import ConnectedAccounts
-from helper.db_config import start as db_start
+from helper.db_config import start as db_start, db
 from .actions import modes
 from pathlib import Path
 import json
@@ -47,9 +47,10 @@ async def add_account(account_id: str):
 
 		actions: list[IAction] = await asyncio.gather(*actions)
 
-	await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
-	await UnpaidRewards.clear(account_id)
-	await ConnectedAccounts.add(793975166, account_id)
+	async with db.transaction():
+		await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
+		await UnpaidRewards.clear(account_id)
+		await ConnectedAccounts.add(793975166, account_id)
 	print('OK:', account_id)
 
 async def main():
