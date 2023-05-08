@@ -5,10 +5,14 @@ from .config import bot
 import asyncio
 from collections.abc import Coroutine
 
-#returns diff and new state
-async def get_diff(action: Coroutine[IAction], state: LastTaskState) -> tuple[list[IAction], LastTaskState]:
+#returns diff and (state if changed else None)
+async def get_diff(action: Coroutine[IAction], state: LastTaskState) -> tuple[list[IAction], LastTaskState | None]:
 	action: IAction = await action
 	diff = action.diff(state)
+
+	if state.ended == action.has_ended() or state.resubmits == action.info.resubmits:
+		return diff, None
+	
 	state.ended = action.has_ended()
 	state.resubmits = action.info.resubmits
 	return diff, state
@@ -29,7 +33,7 @@ async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states:
 	diff = []
 	for i, _ in updates:
 		diff.extend(i)
-	return diff, [i[1] for i in updates]
+	return diff, [i[1] for i in updates if i[1] is not None]
 
 async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
 	async with SingleAccountsClient(account_id) as account:
