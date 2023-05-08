@@ -17,6 +17,9 @@ class LastTaskState(Base):
 	
 	@staticmethod
 	async def bulk_update(values: list['LastTaskState']):
+		for i in values:
+			print('state update:', i.account_id, i.task_id, i.ended, i.resubmits)
+		
 		stmt = 'INSERT INTO LastTaskState VALUES(:account_id, :task_id, :ended, :resubmits) ON DUPLICATE KEY UPDATE ended = :ended, resubmits = :resubmits' #unable to use ORM for execute many
 		await db.execute_many(stmt, [to_mapping(i) for i in values])
 
