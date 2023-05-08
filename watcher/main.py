@@ -117,7 +117,7 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 		await LastTaskState.bulk_update([LastTaskState(**to_mapping(i)) for i in states])
 
 		for action, reward in result:
-			await bot.notify_payment(action, reward._mapping)
+			await bot.notify_payment(action, to_mapping(reward))
 
 async def main():
 	global coef
