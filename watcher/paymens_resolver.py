@@ -7,7 +7,7 @@ from .kuhn import Kuhn
 def resolve_payments(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]]:
 	n, m = len(actions), len(rewards)
 	if n != m:
-		return [], []
+		return []
 
 	G = Kuhn(n + m, n)
 	for i in range(n):
