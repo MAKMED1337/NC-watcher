@@ -4,13 +4,10 @@ from .last_task_state import LastTaskState
 from .actions import IAction
 from .kuhn import Kuhn
 
-async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IAction, UnpaidRewards, LastTaskState]]:
-	rewards = await UnpaidRewards.get(account_id, action.get_enum())
-	actions, states = await get_action_updates(account_id, action)
-
+def resolve_payments(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]]:
 	n, m = len(actions), len(rewards)
 	if n != m:
-		return []
+		return [], []
 
 	G = Kuhn(n + m, n)
 	for i in range(n):
@@ -25,5 +22,5 @@ async def resolve_payments(account_id: str, action: IAction) -> list[tuple[IActi
 		if j == -1:
 			return []
 		
-		result.append((actions[j], rewards[i], states[j]))
+		result.append((actions[j], rewards[i]))
 	return result
