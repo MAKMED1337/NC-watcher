@@ -31,7 +31,7 @@ async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states:
 		diff.extend(i)
 	return diff, [i[1] for i in updates]
 
-async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAction], LastTaskState]:
+async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
 	async with SingleAccountsClient(account_id) as account:
 		if not account.connected:
 			await bot.delete_and_notify(account_id)
