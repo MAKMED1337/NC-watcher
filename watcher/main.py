@@ -13,10 +13,11 @@ import json
 import traceback
 from bot.connected_accounts import ConnectedAccounts
 from typing import Any
-from helper.db_config import start as db_start, to_dict
+from helper.db_config import db, start as db_start, to_mapping
 from accounts.client import AccountsClient
 from.last_task_state import LastTaskState
 import aiohttp
+from .action_getter import get_action_updates
 
 coef = None
 
@@ -79,7 +80,6 @@ async def process_blocks() -> int:
 
 	if len(blocks) == 0:
 		return 0
-	set_last_block_id(blocks[-1]['header']['height'])
 
 	chunks = []
 	for block in blocks:
@@ -100,16 +100,24 @@ async def process_blocks() -> int:
 					
 					args = json.loads(base64.b64decode(f['args']).decode())
 					process_reward_tasks.append(process_reward(transaction['hash'], args))
-	await asyncio.gather(*process_reward_tasks)
+
+	async with db.transaction():
+		await asyncio.gather(*process_reward_tasks)
+		set_last_block_id(blocks[-1]['header']['height'])
 	return len(blocks)
 
-async def resolve_and_pay(account_id: str, action: ActionEnum):
-	result = await resolve_payments(account_id, get_proto_by_enum(action))
+async def resolve_and_pay(account_id: str, action_type: ActionEnum):
+	rewards = await UnpaidRewards.get(account_id, action_type)
+	actions, states = await get_action_updates(account_id, get_proto_by_enum(action_type))
+	result = resolve_payments(actions, rewards)
 	
-	for action, reward, state in result:
-		await bot.notify_payment(action, reward._mapping)
-		await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
-		await LastTaskState.update(**to_dict(state))
+	async with db.transaction():
+		for action, reward in result:
+			await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
+		await LastTaskState.bulk_update([LastTaskState(**to_mapping(i)) for i in states])
+
+		for action, reward in result:
+			await bot.notify_payment(action, reward._mapping)
 
 async def main():
 	global coef
@@ -120,13 +128,13 @@ async def main():
 		async with AccountsClient([]) as c:
 			coef = await c.get_coef()
 		
-		await process_blocks()
-		
 		entities = await UnpaidRewards.get_unpaid_actions()
 		tasks = [asyncio.sleep(1)]
 		for entity in entities:
 			tasks.append(resolve_and_pay(entity.account_id, entity.action))
 		await asyncio.gather(*tasks)
+
+		await process_blocks()
 
 async def stop():
 	await provider.close()
