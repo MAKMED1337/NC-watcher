@@ -39,7 +39,7 @@ async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAc
 	async with SingleAccountsClient(account_id) as account:
 		if not account.connected:
 			await bot.delete_and_notify(account_id)
-			return {}
+			return [], []
 
 		states = await LastTaskState.get(account_id)
 		states = {i.task_id: i for i in states}
