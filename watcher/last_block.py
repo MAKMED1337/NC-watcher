@@ -11,7 +11,8 @@ def get_last_block_id() -> int:
 	
 	return _last_block_id
 
-def set_last_block_id(block_id: int):
+def update_last_block_id(block_id: int):
 	global _last_block_id
-	_last_block_id = block_id
-	open(_last_block_path, 'w').write(str(_last_block_id))
+	if _last_block_id is None or block_id > _last_block_id:
+		_last_block_id = block_id
+		open(_last_block_path, 'w').write(str(_last_block_id))
