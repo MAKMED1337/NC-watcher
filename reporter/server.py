@@ -9,6 +9,7 @@ from pathlib import Path
 import traceback
 from telethon import events
 import os
+import sd_notify
 
 GROUP_ID = 1830719850
 reports = Path(__file__).parent / 'reports'
@@ -83,6 +84,9 @@ async def on_client_connect(conn: Connection):
 
 async def start_all():
 	await start_bot()
+	await server.start()
+	sd_notify.Notifier().ready()
+
 	tasks = [asyncio.create_task(i) for i in [bot.run_until_disconnected(), server.run()]]
 	done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
 	for i in done:

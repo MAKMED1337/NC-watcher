@@ -10,6 +10,7 @@ import helper.db_config as db_config
 from .locks import get_lock
 import asyncio
 from typing import Any
+import sd_notify
 
 server = Server(PORT, Connection, report_exception)
 
@@ -61,7 +62,7 @@ async def lock_accounts(accounts: list[NearCrowdAccount]) -> list[NearCrowdAccou
 		return []
 	
 	tasks = [asyncio.create_task(lock_account(i)) for i in accounts]
-	done, pending = await asyncio.wait(tasks, timeout=10)
+	done, pending = await asyncio.wait(tasks, timeout=60)
 	for i in pending:
 		i.cancel()
 	return [i.result() for i in done]
@@ -126,6 +127,9 @@ async def on_client_connect(conn: Connection):
 
 async def start():
 	await db_config.start()
+	await server.start()
+	sd_notify.Notifier().ready()
+
 	await server.run()
 
 if __name__ == '__main__':
