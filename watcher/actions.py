@@ -59,7 +59,7 @@ class TaskInfo(ListTaskInfo):
 	
 	#used for acade fix(resubmits don't update until click `work on fixing`), but not enough info
 	def get_resubmits(self) -> int:
-		if self.task_id != 750:
+		if self.mode != 750:
 			return self.resubmits
 		return self.resubmits + int(self.status == 3) #acade fix
 
