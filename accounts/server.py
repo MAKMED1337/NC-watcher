@@ -62,7 +62,7 @@ async def lock_accounts(accounts: list[NearCrowdAccount]) -> list[NearCrowdAccou
 		return []
 	
 	tasks = [asyncio.create_task(lock_account(i)) for i in accounts]
-	done, pending = await asyncio.wait(tasks, timeout=60)
+	done, pending = await asyncio.wait(tasks, timeout=15)
 	for i in pending:
 		i.cancel()
 	return [i.result() for i in done]
