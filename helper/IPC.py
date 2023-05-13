@@ -8,7 +8,6 @@ class Connection:
 	def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
 		self._reader = reader
 		self._writer = writer
-		self._active = True
 
 	async def close(self):
 		if self._reader is None:
@@ -21,15 +20,14 @@ class Connection:
 		self._writer.close()
 		await self._writer.wait_closed()
 		self._writer = None
-		self._active = False
 
 	async def __aexit__(self, *args):
 		await self.close()
 
-	def is_active(self):
-		if not self._reader or self._reader.at_eof() or not self._writer:
-			self._active = False
-		return self._active
+	def is_active(self) -> bool:
+		if self._reader is None or self._writer is None or self._reader.at_eof():
+			return False
+		return True
 
 	async def send(self, obj: Any, drain_immediately=True) -> bool:
 		data = pickle.dumps(obj)
@@ -53,13 +51,17 @@ class Connection:
 			if on_exception == Exception:
 				raise
 			return on_exception
+	
+	def __del__(self): #to remove stupid mistakes
+		assert self._reader is None
 
 class Client(Connection):
 	def __init__(self, port: int):
+		super().__init__(None, None)
 		self._port = port
 	
 	async def connect(self):
-		if hasattr(self, '_reader'):
+		if self._reader is not None:
 			return
 		super().__init__(*await asyncio.open_connection('127.0.0.1', self._port))
 
@@ -230,7 +232,8 @@ class Server:
 		return self._connections
 
 	async def start(self):
-		self._server = await asyncio.start_server(self.__handle_connection, '127.0.0.1', self._port)
+		if self._server is None:
+			self._server = await asyncio.start_server(self.__handle_connection, '127.0.0.1', self._port)
 
 	async def run(self):
 		await self.start()
