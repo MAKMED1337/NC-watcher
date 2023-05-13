@@ -56,6 +56,12 @@ class TaskInfo(ListTaskInfo):
 		self.reviews = data['reviews']
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
+	
+	#used for acade fix(resubmits don't update until click `work on fixing`), but not enough info
+	def get_resubmits(self) -> int:
+		if self.task_id != 750:
+			return self.resubmits
+		return self.resubmits + int(self.status == 3) #acade fix
 
 def feq(a: float, b: float) -> bool:
 	return abs(a - b) <= 1
@@ -112,7 +118,7 @@ class Task(IAction):
 		resubmits = state.resubmits or 0
 
 		res = []
-		for resubmit in range(resubmits + 1, self.info.resubmits + 1):
+		for resubmit in range(resubmits + 1, self.info.get_resubmits() + 1):
 			t = copy.deepcopy(self)
 			t.info.resubmits = resubmit
 			t.info.status = 3
