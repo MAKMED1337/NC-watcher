@@ -1,7 +1,6 @@
 from .client import AccountsClient
 import asyncio
 import json
-from pathlib import Path
 
 def get_account_id(s: str) -> str | None:
 	start = 'near-api-js:keystore:'
@@ -15,7 +14,7 @@ async def main():
 	await c.connect()
 
 	data = []
-	for k, v in json.load(open(Path(__file__).parent / 'sessionStorage.json', 'r')).items():
+	for k, v in json.load(open('sessionStorage.json', 'r')).items():
 		account_id = get_account_id(k)
 		if account_id is None:
 			continue

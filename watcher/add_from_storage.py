@@ -4,7 +4,6 @@ from .last_task_state import LastTaskState
 from bot.connected_accounts import ConnectedAccounts
 from helper.db_config import start as db_start, db
 from .actions import modes
-from pathlib import Path
 import json
 from .unpaid_rewards import UnpaidRewards
 from .actions import *
@@ -56,7 +55,7 @@ async def add_account(account_id: str):
 async def main():
 	await db_start()
 	data = []
-	for k, v in json.load(open(Path(__file__).parent / 'sessionStorage.json', 'r')).items():
+	for k, v in json.load(open('sessionStorage.json', 'r')).items():
 		account_id = get_account_id(k)
 		if account_id is None:
 			continue
