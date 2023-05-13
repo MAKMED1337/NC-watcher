@@ -3,6 +3,7 @@ from .client import PORT
 from helper.IPC import Server, Connection, Packet, Response, FuncCall
 from helper.report_exceptions import report_exception
 from helper.bot_config import bot
+from helper.db_config import db
 
 from watcher.actions import IAction, get_payment_cost, modes, qualities
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
@@ -28,15 +29,19 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 		text += f'Your comment: <pre>{html.escape(action.get_my_review()["comment"])}</pre>\n\n'
 	else:
 		text += 'Verdict: <b>' + ('Rejected' if info.status == 3 else qualities[info.quality]) + '</b>\n'
-		text += f'Comment: <pre>{html.escape(info.reviews[-1]["comment"])}</pre>\n\n'
+		if len(info.reviews) > 0:
+			text += f'Comment: <pre>{html.escape(info.reviews[-1]["comment"])}</pre>\n\n'
+		else:
+			text += f'Your comment(resubmitted): <pre>{html.escape(info.comment)}</pre>\n\n'
 		text += f'Resubmits: <b>{info.resubmits}</b>\n\n'
 
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
 	await bot.send_message('@makmed1337', text[:4096])
 
 async def delete_and_notify(account_id: str):
-	await ConnectedAccounts.delete_account(account_id)
-	await UnpaidRewards.clear(account_id)
+	async with db.transaction():
+		await ConnectedAccounts.delete_account(account_id)
+		await UnpaidRewards.clear(account_id)
 	await bot.send_message('@makmed1337', f'Account was deleted: <code>{account_id}</code>')
 
 @server.on_connect
