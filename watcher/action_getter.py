@@ -1,12 +1,12 @@
-from .actions import IAction, modes
+from .actions import IAction, load_action_by_info, modes
 from accounts.client import SingleAccountsClient
 from .last_task_state import LastTaskState
 from .config import bot
 import asyncio
-from collections.abc import Coroutine
+from typing import Awaitable
 
 #returns diff and (state if changed else None)
-async def get_diff(action: Coroutine[IAction], state: LastTaskState) -> tuple[list[IAction], LastTaskState | None]:
+async def get_diff(action: Awaitable[IAction], state: LastTaskState) -> tuple[list[IAction], LastTaskState | None]:
 	action: IAction = await action
 	diff = action.diff(state)
 
@@ -37,8 +37,7 @@ async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states:
 
 async def get_action_updates(account_id: str, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
 	async with SingleAccountsClient(account_id) as account:
-		if not account.connected:
-			await bot.delete_and_notify(account_id)
+		if not account.connected: #could be some bug/etc, doesn't mean that account DNE
 			return [], []
 
 		states = await LastTaskState.get(account_id)
