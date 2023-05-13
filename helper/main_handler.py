@@ -10,6 +10,8 @@ async def _main(main, exception_handler, clean_up):
 		await main()
 	except Exception as e:
 		await exception_handler(e)
+	except BaseException:
+		pass
 	finally:
 		await clean_up()
 
@@ -21,7 +23,9 @@ def main_handler(main, exception_handler, clean_up):
 
 	try:
 		loop.run_until_complete(main_task)
-	except:
+	except Exception:
 		traceback.print_exc()
+	except BaseException:
+		pass
 	finally:
 		loop.close()
