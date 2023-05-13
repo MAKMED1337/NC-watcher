@@ -57,11 +57,9 @@ class TaskInfo(ListTaskInfo):
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
 	
-	#used for acade fix(resubmits don't update until click `work on fixing`), but not enough info
+	#probably all modes have same thing, not enough info
 	def get_resubmits(self) -> int:
-		if self.mode != 750:
-			return self.resubmits
-		return self.resubmits + int(self.status == 3) #acade fix
+		return self.resubmits + int(self.status == 3)
 
 def feq(a: float, b: float) -> bool:
 	return abs(a - b) <= 1
