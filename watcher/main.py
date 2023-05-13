@@ -17,6 +17,7 @@ from.last_task_state import LastTaskState
 import aiohttp
 from .action_getter import get_updates_for_action
 from helper.async_helper import *
+from .actions import get_proto_by_enum
 
 coef = None
 TRIES = 100
@@ -142,7 +143,7 @@ async def process_blocks() -> tuple[int, int]:
 
 async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 	rewards = await UnpaidRewards.get(account_id, action_type)
-	actions, states = await get_updates_for_action(account_id, action_type)
+	actions, states = await get_updates_for_action(account_id, get_proto_by_enum(action_type))
 	result = resolve_payments(actions, rewards)
 	
 	async with db.transaction():
