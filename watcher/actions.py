@@ -43,6 +43,7 @@ class TaskInfo(ListTaskInfo):
 	resubmits: int
 	reward: int
 	reviews: list
+	comment: str | None
 	ideas: list[dict] = field(default_factory=list)
 
 	def __init__(self, list_info: ListTaskInfo, data: dict):
@@ -53,6 +54,7 @@ class TaskInfo(ListTaskInfo):
 		self.resubmits = data['resubmits']
 		self.reward = data['reward']
 		self.reviews = data['reviews']
+		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
 
 def feq(a: float, b: float) -> bool:
