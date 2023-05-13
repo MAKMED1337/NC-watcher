@@ -39,5 +39,5 @@ class UnpaidRewards(Base):
 		await db.execute(delete(UnpaidRewards).where(and_(UnpaidRewards.account_id == account_id)))
 
 	@staticmethod
-	async def get_unpaid_actions() -> list['UnpaidRewards']:
+	async def get_unpaid_action_types() -> list['UnpaidRewards']:
 		return await db.fetch_all(select(UnpaidRewards).distinct(UnpaidRewards.account_id, UnpaidRewards.action))
