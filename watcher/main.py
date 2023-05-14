@@ -21,7 +21,7 @@ from .actions import get_proto_by_enum
 
 coef = None
 TRIES = 100
-iteration_counter = 0
+block_logger = None
 
 async def auto_retry(func, *args, **kwargs) -> Any:
 	for r in range(TRIES):
@@ -61,15 +61,6 @@ async def process_new_blocks(last_processed_block: int, func):
 	elif last_processed_block == last_block:
 		return
 
-
-
-	global iteration_counter
-	if iteration_counter % 300 == 0:
-		print(last_processed_block, '->', last_block)
-	iteration_counter += 1
-
-
-
 	async def load_and_process(block_id: int):
 		block = await get_block_by_id(block_id)
 		if block is None:
@@ -80,6 +71,11 @@ async def process_new_blocks(last_processed_block: int, func):
 	for i in range(last_processed_block + 1, last_block, COROS_LIMIT): #to reduce memory usage
 		await wait_pool([load_and_process(id) for id in range(i, min(i + COROS_LIMIT, last_block))])
 	await processing_last
+
+async def last_block_logger():
+	while True:
+		print('block_id:', get_last_block_id())
+		await asyncio.sleep(5 * 60)
 
 async def add_reward_if_connected(tx_id: str, account_id: str, cost: float, action: ActionEnum, adjustment: int = None):
 	if await ConnectedAccounts.is_connected(account_id):
@@ -151,9 +147,10 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 			await bot.notify_payment(action, to_mapping(reward))
 
 async def main():
-	global coef
+	global coef, block_logger
 	await db_start()
 	await bot.connect()
+	block_logger = asyncio.create_task(last_block_logger())
 
 	while True:
 		async with AccountsClient([]) as c:
@@ -170,6 +167,8 @@ async def main():
 async def stop():
 	await provider.close()
 	await stop_reporter()
+	if block_logger is not None:
+		block_logger.cancel()
 
 if __name__ == '__main__':
 	main_handler(main, report_exception, provider.close)
