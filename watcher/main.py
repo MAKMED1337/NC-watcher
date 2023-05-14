@@ -48,10 +48,6 @@ async def get_block_by_id(id: int) -> dict | None:
 	
 	print('smth wrong with block', id)
 
-async def get_chunks(block_id: int) -> list[dict[str, Any]]:
-	block = await get_block_by_id(block_id)
-	return await wait_pool(auto_retry(provider.get_chunk, chunk['chunk_hash']) for chunk in block['chunks'])
-
 #unordered
 async def process_new_blocks(last_processed_block: int, func):
 	block = await auto_retry(provider.get_block, finality=FinalityTypes.FINAL)
