@@ -78,7 +78,7 @@ async def last_block_logger():
 		block_id = get_last_block_id()
 		print('block_id:', block_id)
 		if block_id == prev:
-			reporter.report(f'blocks stuck on {block_id}')
+			await reporter.report(f'blocks stuck on {block_id}')
 			break
 
 		prev = block_id
