@@ -1,5 +1,5 @@
 from helper.main_handler import main_handler
-from helper.report_exceptions import report_exception, stop_reporter, reporter
+from helper.report_exceptions import report_exception, stop_reporter, report
 from .config import provider, bot
 
 import asyncio
@@ -78,7 +78,7 @@ async def last_block_logger():
 		block_id = get_last_block_id()
 		print('block_id:', block_id)
 		if block_id == prev:
-			await reporter.report(f'blocks stuck on {block_id}')
+			await report(f'blocks stuck on {block_id}')
 			break
 
 		prev = block_id
