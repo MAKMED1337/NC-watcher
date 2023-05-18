@@ -13,6 +13,7 @@ from typing import Any
 import sd_notify
 
 server = Server(PORT, Connection, report_exception)
+TIMEOUT = 30
 
 async def query(account: NearCrowdAccount, q: V2) -> str:
 	return await account.query(q)
@@ -62,7 +63,7 @@ async def lock_accounts(accounts: list[NearCrowdAccount]) -> list[NearCrowdAccou
 		return []
 	
 	tasks = [asyncio.create_task(lock_account(i)) for i in accounts]
-	done, pending = await asyncio.wait(tasks, timeout=15)
+	done, pending = await asyncio.wait(tasks, timeout=TIMEOUT)
 	for i in pending:
 		i.cancel()
 	return [i.result() for i in done]
@@ -91,16 +92,20 @@ class ConnectionHandler:
 		self.accounts = []
 
 	async def proceed_client(self):	
+		tasks = []
 		try:
 			while self.conn.is_active():
-				packet: Packet = await self.conn.read(None)
+				packet: Packet = await self.conn.read(None, timeout=TIMEOUT)
 				assert isinstance(packet, Packet | None), type(packet)
 				if packet is None:
 					break
 				
-				asyncio.create_task(self._proceed_call(Response(self.conn, packet)))
+				tasks.append(asyncio.create_task(self._proceed_call(Response(self.conn, packet))))
 		finally:
 			unlock(self.accounts)
+			for task in tasks:
+				task.cancel()
+			await self.conn.close()
 
 	async def _proceed_call(self, resp: Response):
 		await resp.respond(await self.execute_call(resp.data))
