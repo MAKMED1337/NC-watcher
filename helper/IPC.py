@@ -47,7 +47,7 @@ class Connection:
 	async def read(self, on_exception=Exception, *, timeout: float = None) -> Any:
 		try:
 			len = int.from_bytes(await asyncio.wait_for(self._reader.readexactly(4), timeout), 'big')
-			return pickle.loads(await asyncio.wait_for(await self._reader.readexactly(len)))
+			return pickle.loads(await asyncio.wait_for(self._reader.readexactly(len), timeout))
 		except Exception:
 			if on_exception == Exception:
 				raise
