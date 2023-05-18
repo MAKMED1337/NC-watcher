@@ -79,7 +79,7 @@ async def last_block_logger():
 		print('block_id:', block_id)
 		if block_id == prev:
 			await report(f'blocks stuck on {block_id}')
-			break
+			exit(1)
 
 		prev = block_id
 		await asyncio.sleep(5 * 60)
@@ -136,16 +136,16 @@ async def process_blocks() -> tuple[int, int]:
 	await process_new_blocks(get_last_block_id(), process_block)
 	async with db.transaction():
 		await wait_pool([process_reward(hash, args) for hash, args in updates])
-	
+
 		if last_block_id is not None:
 			update_last_block_id(last_block_id)
 
 async def resolve_and_pay(account_id: str, action_type: ActionEnum):
-	rewards = await UnpaidRewards.get(account_id, action_type)
-	actions, states = await get_updates_for_action(account_id, get_proto_by_enum(action_type))
-	result = resolve_payments(actions, rewards)
-	
 	async with db.transaction():
+		actions, states = await get_updates_for_action(account_id, get_proto_by_enum(action_type))
+		rewards = await UnpaidRewards.get(account_id, action_type)
+		result = resolve_payments(actions, rewards)
+	
 		for action, reward in result:
 			await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
 		await LastTaskState.bulk_update([LastTaskState(**to_mapping(i)) for i in states])
@@ -165,8 +165,8 @@ async def main():
 		
 		actions = await UnpaidRewards.get_unpaid_action_types()
 		tasks = [asyncio.sleep(1)]
-		for action in actions:
-			tasks.append(resolve_and_pay(action.account_id, action.action))
+		for account_id, action in actions:
+			tasks.append(resolve_and_pay(account_id, action))
 		await wait_pool(tasks)
 
 		await process_blocks()
