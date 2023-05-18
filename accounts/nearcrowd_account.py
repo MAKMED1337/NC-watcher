@@ -78,7 +78,7 @@ class NearCrowdAccount:
 		for _ in range(q.retry_count):
 			try:
 				return await self._query_one_try(q)
-			except (aiohttp.ClientConnectorError, aiohttp.ServerDisconnectedError, aiohttp.ClientResponseError, asyncio.TimeoutError):
+			except Exception:
 				await asyncio.sleep(1)
 
 
@@ -91,7 +91,7 @@ class NearCrowdAccount:
 					async with session.get(f'{api}{path}') as response:
 						response.raise_for_status()
 						return await response.text()
-			except (aiohttp.ClientConnectorError, aiohttp.ServerDisconnectedError, aiohttp.ClientResponseError, asyncio.TimeoutError):
+			except Exception:
 				await asyncio.sleep(1)
 	
 	@staticmethod
