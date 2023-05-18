@@ -45,6 +45,9 @@ async def is_connected(account_id: str) -> bool:
 async def get_coef() -> float:
 	return await NearCrowdAccount.get_coef()
 
+async def get_access_keys(account_id: str):
+	return await NearCrowdAccount.get_access_keys(account_id)
+
 async def apply_accountless(call: FuncCall):
 	return await call.apply(globals()[call.name])
 
@@ -118,7 +121,7 @@ class ConnectionHandler:
 			self.accounts = await call.apply(get_locked_accounts)
 			return get_ids(self.accounts)
 
-		if call.name in ('create_account', 'delete_account', 'is_connected', 'get_coef'):
+		if call.name in ('create_account', 'delete_account', 'is_connected', 'get_coef', 'get_access_keys'):
 			return await apply_accountless(call)
 		
 		assert call.name in ('query'), call.name

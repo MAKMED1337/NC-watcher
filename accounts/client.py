@@ -74,6 +74,9 @@ class AccountsClient(FuncClient):
 	async def get_coef(self, on_exception: Any=Exception) -> float:
 		return await self.call(on_exception, 'get_coef')
 
+	async def get_access_keys(self, account_id: str, on_exception: Any=Exception):
+		return await self.call(on_exception, 'get_access_keys', account_id)
+
 
 
 	async def _query(self, q: V2, params=QueryParams(), callback=identity) -> dict[str, str]:
