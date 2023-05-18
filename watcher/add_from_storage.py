@@ -23,33 +23,34 @@ async def safe_load_action(account: SingleAccountsClient, task: ListTaskInfo) ->
 		print(account.account_id, task, traceback.format_exc())
 
 async def add_account(account_id: str):
-	async with SingleAccountsClient(account_id) as c:
-		if not c.connected:
-			print(f'cannot connect to {account_id}')
-			return
-		
-		mode_tasks = await asyncio.gather(*[c.get_task_list(mode) for mode in modes.keys()])
-		state = await LastTaskState.get(account_id)
-		ended_tasks = set([i.task_id for i in state if i.ended])
-
-		actions = []
-		for tasks in mode_tasks:
-			if tasks is None:
-				print('WTF:', account_id)
-				continue
+	async with db.transaction():
+		async with SingleAccountsClient(account_id) as c:
+			if not c.connected:
+				print(f'cannot connect to {account_id}')
+				return
 			
-			for i in tasks:
-				if i.task_id in ended_tasks:
+			mode_tasks = await asyncio.gather(*[c.get_task_list(mode) for mode in modes.keys()])
+			state = await LastTaskState.get(account_id)
+			ended_tasks = set([i.task_id for i in state if i.ended])
+
+			actions = []
+			for tasks in mode_tasks:
+				if tasks is None:
+					print('WTF:', account_id)
 					continue
 				
-				actions.append(safe_load_action(c, i))
+				for i in tasks:
+					if i.task_id in ended_tasks:
+						continue
+					
+					actions.append(safe_load_action(c, i))
 
-		actions: list[IAction] = await asyncio.gather(*actions)
+			actions: list[IAction] = await asyncio.gather(*actions)
 
-	async with db.transaction():
-		await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.get_resubmits()) for i in actions])
-		await UnpaidRewards.clear(account_id)
-		await ConnectedAccounts.add(793975166, account_id)
+		
+			await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.get_resubmits()) for i in actions])
+			await UnpaidRewards.clear(account_id)
+			await ConnectedAccounts.add(793975166, account_id)
 	print('OK:', account_id)
 
 async def main():
