@@ -41,7 +41,7 @@ async def get_block_by_id(id: int) -> dict | None:
 			if e['cause']['name'] != 'UNKNOWN_BLOCK':
 				raise
 			return None
-		except (aiohttp.ClientResponseError, aiohttp.ClientOSError):
+		except Exception:
 			pass
 		
 		await asyncio.sleep(1)
@@ -153,6 +153,15 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 		for action, reward in result:
 			await bot.notify_payment(action, to_mapping(reward))
 
+async def fetch_coef():
+	global coef
+	while True:
+		async with AccountsClient([]) as c:
+			coef = await c.get_coef(None)
+			if coef is not None:
+				return
+		await asyncio.sleep(1)
+
 async def main():
 	global coef, block_logger
 	await db_start()
@@ -160,8 +169,7 @@ async def main():
 	block_logger = asyncio.create_task(last_block_logger())
 
 	while True:
-		async with AccountsClient([]) as c:
-			coef = await c.get_coef()
+		await fetch_coef()
 		
 		actions = await UnpaidRewards.get_unpaid_action_types()
 		tasks = [asyncio.sleep(1)]
