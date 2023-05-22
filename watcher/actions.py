@@ -52,14 +52,10 @@ class TaskInfo(ListTaskInfo):
 		
 		self.pillar_id = data.get('pillar_id', None)
 		self.resubmits = data['resubmits']
-		self.reward = data['reward']
+		self.reward = data['reward'] + int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
 		self.reviews = data['reviews']
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
-	
-	#probably all modes have same thing, not enough info
-	def get_resubmits(self) -> int:
-		return self.resubmits + int(self.status == 3)
 
 def feq(a: float, b: float) -> bool:
 	return abs(a - b) <= 1
@@ -116,7 +112,7 @@ class Task(IAction):
 		resubmits = state.resubmits or 0
 
 		res = []
-		for resubmit in range(resubmits + 1, self.info.get_resubmits() + 1):
+		for resubmit in range(resubmits + 1, self.info.resubmits + 1):
 			t = copy.deepcopy(self)
 			t.info.resubmits = resubmit
 			t.info.status = 3

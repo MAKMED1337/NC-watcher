@@ -34,7 +34,7 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 			text += f'Comment: <pre>{html.escape(info.reviews[-1]["comment"])}</pre>\n\n'
 		else:
 			text += f'Your comment(resubmitted): <pre>{html.escape(info.comment)}</pre>\n\n'
-		text += f'Resubmits: <b>{info.get_resubmits()}</b>\n\n'
+		text += f'Resubmits: <b>{info.resubmits}</b>\n\n'
 
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
 	await bot.send_message('@makmed1337', text[:4096])
