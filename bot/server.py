@@ -13,7 +13,8 @@ import html
 server = Server(PORT, Connection, report_exception)
 
 async def notify_payment(action: IAction, reward: UnpaidRewards):
-	print(action, reward)
+	print(action.info)
+	print(reward)
 	assert isinstance(action, IAction), type(action)
 	#assert isinstance(reward, UnpaidRewards), type(reward)       <- 'sqlalchemy.engine.row.Row'
 
