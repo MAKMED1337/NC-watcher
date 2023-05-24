@@ -51,8 +51,8 @@ class TaskInfo(ListTaskInfo):
 			setattr(self, k, v)
 		
 		self.pillar_id = data.get('pillar_id', None)
-		self.resubmits = data['resubmits']
-		self.reward = data['reward'] + int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
+		self.resubmits = data['resubmits'] + int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
+		self.reward = data['reward']
 		self.reviews = data['reviews']
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
