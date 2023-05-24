@@ -2,6 +2,7 @@ from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
 from helper.bot_config import bot, start as start_bot
 from helper.db_config import start as start_db
+from . import bot_interaction #only loads to catch events
 import sd_notify
 
 from .server import server

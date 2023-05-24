@@ -37,3 +37,7 @@ class ConnectedAccounts(Base):
 	@staticmethod
 	async def remove_key(account_id: str, private_key: str):
 		await db.execute(delete(ConnectedAccounts).where(and_(ConnectedAccounts.account_id == account_id, ConnectedAccounts.private_key == private_key)))
+
+	@staticmethod
+	async def get_connected_accounts(tg_id: int) -> list[str]:
+		return await fetch_all_column(select(ConnectedAccounts.account_id).where(ConnectedAccounts.tg_id == tg_id))
