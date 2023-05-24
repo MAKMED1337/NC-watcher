@@ -1,5 +1,5 @@
 import asyncio
-from accounts.client import SingleAccountsClient
+from accounts.client import AccountsClient, SingleAccountsClient
 from .last_task_state import LastTaskState
 from bot.connected_accounts import ConnectedAccounts
 from helper.db_config import start as db_start, db
@@ -22,8 +22,11 @@ async def safe_load_action(account: SingleAccountsClient, task: ListTaskInfo) ->
 	except Exception:
 		print(account.account_id, task, traceback.format_exc())
 
-async def add_account(account_id: str):
+async def add_account(account_id: str, private_key: str):
 	async with db.transaction():
+		async with AccountsClient([]) as c:
+			await c.create_account(account_id, private_key)
+		
 		async with SingleAccountsClient(account_id) as c:
 			if not c.connected:
 				print(f'cannot connect to {account_id}')
@@ -50,7 +53,7 @@ async def add_account(account_id: str):
 		
 			await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
 			await UnpaidRewards.clear(account_id)
-			await ConnectedAccounts.add(793975166, account_id)
+			await ConnectedAccounts.add(793975166, account_id, private_key)
 	print('OK:', account_id)
 
 async def main():
@@ -60,6 +63,6 @@ async def main():
 		account_id = get_account_id(k)
 		if account_id is None:
 			continue
-		data.append(account_id)
-	await asyncio.gather(*[add_account(i) for i in data])
+		data.append((account_id, v))
+	await asyncio.gather(*[add_account(*i) for i in data])
 asyncio.run(main())
