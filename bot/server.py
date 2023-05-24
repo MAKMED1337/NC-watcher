@@ -39,10 +39,7 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
 	await bot.send_message('@makmed1337', text[:4096])
 
-async def delete_and_notify(account_id: str):
-	async with db.transaction():
-		await ConnectedAccounts.delete_account(account_id)
-		await UnpaidRewards.clear(account_id)
+async def remove_key(account_id: str, private_key: str):
 	await bot.send_message('@makmed1337', f'Account was deleted: <code>{account_id}</code>')
 
 @server.on_connect
@@ -53,7 +50,7 @@ async def on_client_connect(conn: Connection):
 			break
 
 		call: FuncCall = packet.data
-		assert call.name in ('notify_payment', 'delete_and_notify')
+		assert call.name in ('notify_payment', 'remove_key')
 
 		resp = Response(conn, packet)
 		await resp.respond(await call.apply(globals()[call.name]))

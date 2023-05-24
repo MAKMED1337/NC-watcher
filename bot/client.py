@@ -14,5 +14,5 @@ class BotClient(FuncClient):
 	async def notify_payment(self, action: IAction, reward: UnpaidRewards, on_exception: Any=Exception):
 		return await self.call(on_exception, 'notify_payment', action, reward)
 
-	async def delete_and_notify(self, account_id: str, on_exception: Any=Exception):
-		return await self.call(on_exception, 'delete_and_notify', account_id)
+	async def remove_key(self, account_id: str, private_key: str, on_exception: Any=Exception):
+		return await self.call(on_exception, 'remove_key', account_id, private_key)
