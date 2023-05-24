@@ -44,11 +44,17 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 		await c.verify_keys(account_id)
 	
 	for tg_id in await ConnectedAccounts.get_tg(account_id):
-		await bot.send_message(tg_id, text[:4096])
+		try:
+			await bot.send_message(tg_id, text[:4096])
+		except Exception:
+			pass
 
 async def remove_key(account_id: str, private_key: str):
 	for tg_id in await ConnectedAccounts.get_tg_by_key(account_id, private_key):
-		await bot.send_message(tg_id, f'Account was disconnected: <code>{account_id}</code>')
+		try:
+			await bot.send_message(tg_id, f'Account was disconnected: <code>{account_id}</code>')
+		except Exception:
+			pass
 	await ConnectedAccounts.remove_key(account_id, private_key)
 
 @server.on_connect
