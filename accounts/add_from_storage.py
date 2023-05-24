@@ -10,7 +10,7 @@ def get_account_id(s: str) -> str | None:
 		return s[len(start):-len(ending)]
 
 async def main():
-	c = AccountsClient()
+	c = AccountsClient([])
 	await c.connect()
 
 	data = []
