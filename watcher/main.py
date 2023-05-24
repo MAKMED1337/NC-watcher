@@ -14,7 +14,6 @@ from typing import Any
 from helper.db_config import db, start as db_start, to_mapping
 from accounts.client import AccountsClient
 from.last_task_state import LastTaskState
-import aiohttp
 from .action_getter import get_updates_for_action
 from helper.async_helper import *
 from .actions import get_proto_by_enum
@@ -22,6 +21,7 @@ from .actions import get_proto_by_enum
 coef = None
 TRIES = 100
 block_logger = None
+removed_keys = []
 
 async def auto_retry(func, *args, **kwargs) -> Any:
 	for r in range(TRIES):
@@ -97,8 +97,14 @@ async def process_reward(tx_id: str, args: dict):
 		assert 0 <= adjustment <= 2
 		await add_reward_if_connected(tx_id, reviewer, args['mnear_per_review'], ActionEnum.review, adjustment)
 
+async def update_keys(c: AccountsClient, account_id: str):
+	if await ConnectedAccounts.is_connected(account_id):
+		await c.update_keys(account_id)
+
 #returns list[hash, args]
 def parse_chunk(chunk: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+	global removed_keys
+
 	result = []
 	for transaction in chunk['transactions']:
 		if transaction['signer_id'] == 'app.nearcrowd.near':
@@ -112,6 +118,11 @@ def parse_chunk(chunk: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
 				
 				args = json.loads(base64.b64decode(f['args']).decode())
 				result.append((transaction['hash'], args))
+		
+		for action in transaction['actions']:
+			if 'DeleteKey' in action:
+				removed_keys.append(transaction['signer_id'])
+	
 	return result
 
 #blocks count, chunks count
@@ -134,6 +145,12 @@ async def process_blocks() -> tuple[int, int]:
 			updates.extend(parse_chunk(chunk))
 
 	await process_new_blocks(get_last_block_id(), process_block)
+
+	async with AccountsClient([]) as c:
+		global removed_keys
+		await wait_pool([update_keys(c, account_id) for account_id in removed_keys])
+		removed_keys.clear()
+
 	async with db.transaction():
 		await wait_pool([process_reward(hash, args) for hash, args in updates])
 
