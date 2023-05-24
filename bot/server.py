@@ -5,6 +5,7 @@ from helper.report_exceptions import report_exception
 from helper.bot_config import bot
 from helper.db_config import db
 
+from accounts.client import AccountsClient
 from watcher.actions import IAction, get_payment_cost, modes, qualities
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
 from .connected_accounts import ConnectedAccounts
@@ -16,11 +17,12 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 	print(action.info)
 	print(reward)
 	assert isinstance(action, IAction), type(action)
-	#assert isinstance(reward, UnpaidRewards), type(reward)       <- 'sqlalchemy.engine.row.Row'
+
+	account_id = reward.account_id
 
 	info = action.info
 	text = f'TX: <code>{reward.tx_id}</code>\n\n'
-	text += f'Account: <code>{reward.account_id}</code>\n'
+	text += f'Account: <code>{account_id}</code>\n'
 	text += f'Action: {reward.action.name.capitalize()}\n'
 	text += f'{modes[info.mode].name}({info.task_id}): <pre>{html.escape(info.short_descr)}</pre>\n\n'
 
@@ -37,10 +39,17 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 		text += f'Resubmits: <b>{info.resubmits}</b>\n\n'
 
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
-	await bot.send_message('@makmed1337', text[:4096])
+
+	async with AccountsClient([]) as c:
+		await c.verify_keys(account_id)
+	
+	for tg_id in await ConnectedAccounts.get_tg(account_id):
+		await bot.send_message(tg_id, text[:4096])
 
 async def remove_key(account_id: str, private_key: str):
-	await bot.send_message('@makmed1337', f'Account was deleted: <code>{account_id}</code>')
+	for tg_id in await ConnectedAccounts.get_tg_by_key(account_id, private_key):
+		await bot.send_message(tg_id, f'Account was disconnected: <code>{account_id}</code>')
+	await ConnectedAccounts.remove_key(account_id, private_key)
 
 @server.on_connect
 async def on_client_connect(conn: Connection):
