@@ -28,11 +28,11 @@ class ConnectedAccounts(Base):
 
 	@staticmethod
 	async def get_tg(account_id: str) -> list[int]:
-		return await db.fetch_val(select(ConnectedAccounts.tg_id).where(ConnectedAccounts.account_id == account_id))
+		return await fetch_all_column(select(ConnectedAccounts.tg_id).where(ConnectedAccounts.account_id == account_id))
 
 	@staticmethod
 	async def get_tg_by_key(account_id: str, private_key: str) -> list[str]:
-		return await db.fetch_val(select(ConnectedAccounts.tg_id).where(and_(ConnectedAccounts.account_id == account_id, ConnectedAccounts.private_key == private_key)))
+		return await fetch_all_column(select(ConnectedAccounts.tg_id).where(and_(ConnectedAccounts.account_id == account_id, ConnectedAccounts.private_key == private_key)))
 	
 	@staticmethod
 	async def remove_key(account_id: str, private_key: str):
