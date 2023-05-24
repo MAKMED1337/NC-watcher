@@ -25,3 +25,7 @@ class ConnectedAccounts(Base):
 	@staticmethod
 	async def remove(tg_id: int, account_id: str):
 		await db.execute(delete(ConnectedAccounts).where(and_(ConnectedAccounts.tg_id == tg_id, ConnectedAccounts.account_id == account_id)))
+
+	@staticmethod
+	async def get_connected_tg(account_id: str) -> list[int]:
+		return await db.fetch_val(select(ConnectedAccounts.tg_id).where(ConnectedAccounts.account_id == account_id))

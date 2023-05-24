@@ -97,7 +97,7 @@ class ConnectionHandler:
 			self.accounts = await call.apply(get_locked_accounts)
 			return get_ids(self.accounts)
 
-		if call.name in ('create_account', 'is_connected', 'get_coef', 'get_access_keys', 'update_keys'):
+		if call.name in ('create_account', 'is_connected', 'get_coef', 'get_access_keys', 'verify_keys'):
 			return await apply_accountless(call)
 		
 		assert call.name in ('query'), call.name

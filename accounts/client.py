@@ -74,8 +74,8 @@ class AccountsClient(FuncClient):
 	async def get_access_keys(self, account_id: str, on_exception: Any=Exception):
 		return await self.call(on_exception, 'get_access_keys', account_id)
 
-	async def update_keys(self, account_id: str, on_exception: Any=Exception) -> list[str]:
-		return await self.call(on_exception, 'update_keys', account_id)
+	async def verify_keys(self, account_id: str, on_exception: Any=Exception) -> list[str]:
+		return await self.call(on_exception, 'verify_keys', account_id)
 
 
 	async def _query(self, q: V2, params=QueryParams(), callback=identity) -> dict[str, str]:

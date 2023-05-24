@@ -27,7 +27,7 @@ async def get_access_keys(account_id: str):
 	return await NearCrowdAccount.get_access_keys(account_id)
 
 #returns removed keys
-async def update_keys(account_id: str) -> list[str]:
+async def verify_keys(account_id: str) -> list[str]:
 	public_keys = await get_access_keys(account_id)
 	keys = await Accounts.get_keys(account_id)
 

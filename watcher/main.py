@@ -97,9 +97,9 @@ async def process_reward(tx_id: str, args: dict):
 		assert 0 <= adjustment <= 2
 		await add_reward_if_connected(tx_id, reviewer, args['mnear_per_review'], ActionEnum.review, adjustment)
 
-async def update_keys(c: AccountsClient, account_id: str):
+async def verify_keys(c: AccountsClient, account_id: str):
 	if await ConnectedAccounts.is_connected(account_id):
-		await c.update_keys(account_id)
+		await c.verify_keys(account_id)
 
 #returns list[hash, args]
 def parse_chunk(chunk: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
@@ -148,7 +148,7 @@ async def process_blocks() -> tuple[int, int]:
 
 	async with AccountsClient([]) as c:
 		global removed_keys
-		await wait_pool([update_keys(c, account_id) for account_id in removed_keys])
+		await wait_pool([verify_keys(c, account_id) for account_id in removed_keys])
 		removed_keys.clear()
 
 	async with db.transaction():
