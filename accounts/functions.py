@@ -30,8 +30,7 @@ async def get_access_keys(account_id: str):
 async def verify_keys(account_id: str) -> list[str]:
 	public_keys = await get_access_keys(account_id)
 	keys = await Accounts.get_keys(account_id)
-
-	broken_keys = [key for key in keys if KeyPair(key).public_key not in public_keys]
+	broken_keys = [key for key in keys if 'ed25519:' + KeyPair(key).encoded_public_key() not in public_keys]
 	
 	for key in broken_keys:
 		await _delete_key(account_id, key)
