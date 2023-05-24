@@ -20,7 +20,7 @@ async def main():
 			continue
 		data.append((account_id, v))
 	
-	result = await asyncio.gather(*[c.create_account(k, v) for k, v in data])
+	result = await asyncio.gather(*[c.add_key(k, v) for k, v in data])
 	print('\n'.join([f'{account_id} -> {r}' for (account_id, key), r in zip(data, result)]))
 
 	await c.close()

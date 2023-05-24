@@ -25,7 +25,7 @@ async def safe_load_action(account: SingleAccountsClient, task: ListTaskInfo) ->
 async def add_account(account_id: str, private_key: str):
 	async with db.transaction():
 		async with AccountsClient([]) as c:
-			await c.create_account(account_id, private_key)
+			await c.add_key(account_id, private_key)
 		
 		async with SingleAccountsClient(account_id) as c:
 			if not c.connected:

@@ -62,7 +62,7 @@ class AccountsClient(FuncClient):
 		return ids
 
 	#create or add key
-	async def create_account(self, account_id: str, private_key: str, on_exception: Any=Exception) -> bool:
+	async def add_key(self, account_id: str, private_key: str, on_exception: Any=Exception) -> bool:
 		return await self.call(on_exception, 'create_account', account_id, private_key)
 	
 	async def is_connected(self, account_id: str, on_exception: Any=Exception) -> bool:
@@ -129,7 +129,7 @@ class SingleAccountsClient(AccountsClient):
 	async def set_accounts(self, *args, **kwargs):
 		await super().set_accounts(*args, **kwargs)
 
-	async def create_account(self, *args, **kwargs):
+	async def add_key(self, *args, **kwargs):
 		raise NotImplementedError
 	
 	async def _query(self, *args, **kwargs) -> str:
