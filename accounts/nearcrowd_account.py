@@ -31,6 +31,9 @@ class V2(BaseModel):
 contract_id = 'app.nearcrowd.near'
 api = 'https://nearcrowd.com/'
 
+class InvalidKeyException(Exception):
+	pass
+
 class NearCrowdAccount:
 	def __init__(self, account_id: str, private_key: str):
 		self._signer = Signer(account_id, KeyPair(private_key))
@@ -84,8 +87,12 @@ class NearCrowdAccount:
 				request = session.post(url, **{post.type: post.data}, headers={'Content-Type': 'application/json'})
 
 			async with request as response:
+				text = await response.text()
+				if not response.ok and text.endswith('AssertionError: Access key not found\n'):
+					raise InvalidKeyException()
 				response.raise_for_status()
-				return await response.text()
+
+				return text
 
 	async def query(self, q: V2) -> str:
 		for _ in range(q.retry_count):
