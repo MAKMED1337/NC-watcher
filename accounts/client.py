@@ -61,12 +61,9 @@ class AccountsClient(FuncClient):
 		self.connected_ids = ids
 		return ids
 
-	#create or update key
+	#create or add key
 	async def create_account(self, account_id: str, private_key: str, on_exception: Any=Exception) -> bool:
 		return await self.call(on_exception, 'create_account', account_id, private_key)
-
-	async def delete_account(self, account_id: str, on_exception: Any=Exception):
-		return await self.call(on_exception, 'delete_account', account_id)
 	
 	async def is_connected(self, account_id: str, on_exception: Any=Exception) -> bool:
 		return await self.call(on_exception, 'is_connected', account_id)
@@ -77,6 +74,8 @@ class AccountsClient(FuncClient):
 	async def get_access_keys(self, account_id: str, on_exception: Any=Exception):
 		return await self.call(on_exception, 'get_access_keys', account_id)
 
+	async def update_keys(self, account_id: str, on_exception: Any=Exception) -> list[str]:
+		return await self.call(on_exception, 'update_keys', account_id)
 
 
 	async def _query(self, q: V2, params=QueryParams(), callback=identity) -> dict[str, str]:
@@ -131,9 +130,6 @@ class SingleAccountsClient(AccountsClient):
 		await super().set_accounts(*args, **kwargs)
 
 	async def create_account(self, *args, **kwargs):
-		raise NotImplementedError
-
-	async def delete_account(self, *args, **kwargs):
 		raise NotImplementedError
 	
 	async def _query(self, *args, **kwargs) -> str:

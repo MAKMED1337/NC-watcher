@@ -8,6 +8,7 @@ from .nearcrowd_account import NearCrowdAccount, V2
 from .accounts_db import Accounts
 import helper.db_config as db_config
 from .locks import get_lock
+from .functions import *
 import asyncio
 from typing import Any
 import sd_notify
@@ -15,22 +16,6 @@ import sd_notify
 server = Server(PORT, Connection, report_exception)
 TIMEOUT = 30
 
-async def query(account: NearCrowdAccount, q: V2) -> str:
-	return await account.query(q)
-
-async def delete_account(account_id: str):
-	await Accounts.delete_account(account_id)
-
-async def create_account(account_id: str, private_key: str) -> bool:
-	try:
-		account = NearCrowdAccount(account_id, private_key)
-		if not await account.check_account():
-			return False
-		
-		await Accounts.add_account(account_id, private_key)
-		return True
-	except Exception:
-		return False
 
 async def get_account(account_id: str) -> NearCrowdAccount | None:
 	try:
@@ -39,15 +24,6 @@ async def get_account(account_id: str) -> NearCrowdAccount | None:
 	except Exception:
 		return None
 
-async def is_connected(account_id: str) -> bool:
-	return await Accounts.is_connected(account_id)
-
-async def get_coef() -> float:
-	return await NearCrowdAccount.get_coef()
-
-async def get_access_keys(account_id: str):
-	return await NearCrowdAccount.get_access_keys(account_id)
-
 async def apply_accountless(call: FuncCall):
 	return await call.apply(globals()[call.name])
 
@@ -55,7 +31,7 @@ async def apply_for_accounts(accounts: NearCrowdAccount | list[NearCrowdAccount]
 	return await asyncio.gather(*[call.apply(globals()[call.name], i) for i in accounts])
 
 async def get_accounts_list() -> list[NearCrowdAccount]:
-	return [NearCrowdAccount(i.account_id, i.private_key) for i in await Accounts.get_accounts_credentials()]
+	return [NearCrowdAccount(account_id, private_key) for account_id, private_key in await Accounts.get_accounts_credentials()]
 
 async def lock_account(account: NearCrowdAccount):
 	await get_lock(account.account_id).acquire()
@@ -121,7 +97,7 @@ class ConnectionHandler:
 			self.accounts = await call.apply(get_locked_accounts)
 			return get_ids(self.accounts)
 
-		if call.name in ('create_account', 'delete_account', 'is_connected', 'get_coef', 'get_access_keys'):
+		if call.name in ('create_account', 'is_connected', 'get_coef', 'get_access_keys', 'update_keys'):
 			return await apply_accountless(call)
 		
 		assert call.name in ('query'), call.name
