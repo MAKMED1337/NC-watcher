@@ -10,8 +10,8 @@ from .server import server
 import asyncio
 
 async def start_all():
-	await start_bot()
 	await start_db()
+	await start_bot()
 	await server.start()
 	sd_notify.Notifier().ready()
 
