@@ -203,4 +203,4 @@ async def stop():
 		block_logger.cancel()
 
 if __name__ == '__main__':
-	main_handler(main, report_exception, provider.close)
+	main_handler(main, report_exception, stop)
