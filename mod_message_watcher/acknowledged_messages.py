@@ -3,7 +3,7 @@ from sqlalchemy import Column, BigInteger
 from sqlalchemy import select, insert
 
 class AcknowledgedMessages(Base):
-	__tablename__ = 'ConnectedAccounts'
+	__tablename__ = 'AcknowledgedMessages'
 	id = Column(BigInteger, primary_key=True)	
 
 	@staticmethod
