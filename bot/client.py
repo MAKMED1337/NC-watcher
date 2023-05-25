@@ -16,3 +16,6 @@ class BotClient(FuncClient):
 
 	async def remove_key(self, account_id: str, private_key: str, on_exception: Any=Exception):
 		return await self.call(on_exception, 'remove_key', account_id, private_key)
+
+	async def notify_mod_message(self, account_id: str, msg: str, on_exception: Any=Exception):
+		return await self.call(on_exception, 'notify_mod_message', account_id, msg)

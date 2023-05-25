@@ -59,6 +59,9 @@ async def remove_key(account_id: str, private_key: str):
 			pass
 	await ConnectedAccounts.remove_key(account_id, private_key)
 
+async def notify_mod_message(account_id: str, msg: str):
+	await send_to_connected(account_id, f'Moderators have sent you the following message:\n\n<pre>{html.escape(msg)}</pre>')
+
 @server.on_connect
 async def on_client_connect(conn: Connection):
 	while conn.is_active():
@@ -67,7 +70,7 @@ async def on_client_connect(conn: Connection):
 			break
 
 		call: FuncCall = packet.data
-		assert call.name in ('notify_payment', 'remove_key')
+		assert call.name in ('notify_payment', 'remove_key', 'notify_mod_message')
 
 		resp = Response(conn, packet)
 		await resp.respond(await call.apply(globals()[call.name]))
