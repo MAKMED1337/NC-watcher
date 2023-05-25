@@ -40,6 +40,7 @@ class ListTaskInfo:
 def identity(x):
 	return x
 
+#TODO: add normal types, insted of dict[str, ...]
 class AccountsClient(FuncClient):
 	def __init__(self, account_ids: list[str] | None = None):
 		super().__init__(PORT)
@@ -113,6 +114,9 @@ class AccountsClient(FuncClient):
 				r[i]['mode'] = mode
 			return [ListTaskInfo(i) for i in r]
 		return await self._query(V2(path=f'v2/get_old_tasks/{mode}', name='v2'), params, callback)
+
+	async def get_mod_message(self, params=QueryParams()) -> dict[str, Any]: #id: int, msg: str or empty
+		return await self._query_json(V2(path=f'mod_message', name='mod'), params)
 
 
 class SingleAccountsClient(AccountsClient):
