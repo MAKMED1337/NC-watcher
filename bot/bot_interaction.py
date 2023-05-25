@@ -24,6 +24,7 @@ async def add_account(account_id: str, private_key: str):
 			if not await c.add_key(account_id, private_key):
 				return False
 
+			print(account_id, '->', 'connected' if len(c.connected_ids) == 1 else 'new')
 			if len(c.connected_ids) == 1: #was already connected, nothing to do
 				return True
 		
