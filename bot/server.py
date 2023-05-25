@@ -13,6 +13,16 @@ import html
 
 server = Server(PORT, Connection, report_exception)
 
+async def send_to_connected(account_id: str, text: str):
+	async with AccountsClient([]) as c:
+		await c.verify_keys(account_id)
+	
+	for tg_id in await ConnectedAccounts.get_tg(account_id):
+		try:
+			await bot.send_message(tg_id, text[:4096])
+		except Exception:
+			pass
+
 async def notify_payment(action: IAction, reward: UnpaidRewards):
 	print(action.info)
 	print(reward)
@@ -39,15 +49,7 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 		text += f'Resubmits: <b>{info.resubmits}</b>\n\n'
 
 	text += f'Price: <b>{get_payment_cost(reward) / 1000}</b>Ⓝ'
-
-	async with AccountsClient([]) as c:
-		await c.verify_keys(account_id)
-	
-	for tg_id in await ConnectedAccounts.get_tg(account_id):
-		try:
-			await bot.send_message(tg_id, text[:4096])
-		except Exception:
-			pass
+	await send_to_connected(account_id, text)
 
 async def remove_key(account_id: str, private_key: str):
 	for tg_id in await ConnectedAccounts.get_tg_by_key(account_id, private_key):
