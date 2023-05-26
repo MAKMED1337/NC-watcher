@@ -38,22 +38,27 @@ async def fetch_coef():
 				return
 		await asyncio.sleep(1)
 
-async def main():
-	global coef, block_logger
+async def start():
+	global block_logger
 	await db_start()
 	await bot.connect()
 	block_logger = asyncio.create_task(last_block_logger())
 
-	while True:
-		await fetch_coef()
+async def iteration():
+	await fetch_coef()
 		
-		actions = await UnpaidRewards.get_unpaid_action_types()
-		tasks = [asyncio.sleep(1)]
-		for account_id, action in actions:
-			tasks.append(resolve_and_pay(account_id, action))
-		await wait_pool(tasks)
+	actions = await UnpaidRewards.get_unpaid_action_types()
+	tasks = [asyncio.sleep(1)]
+	for account_id, action in actions:
+		tasks.append(resolve_and_pay(account_id, action))
+	await wait_pool(tasks)
 
-		await process_new_blocks()
+	await process_new_blocks()
+
+async def main():
+	await start()
+	while True:
+		await iteration()
 
 async def stop():
 	await provider.close()
