@@ -12,7 +12,7 @@ from.last_task_state import LastTaskState
 from .action_getter import get_updates_for_action
 from helper.async_helper import *
 from .actions import get_proto_by_enum
-from .block_processor import process_new_blocks, coef, last_block_logger #import coef, cause circular import
+from .block_processor import process_new_blocks, set_coef, last_block_logger #import coef, cause circular import
 
 block_logger = None
 
@@ -30,11 +30,11 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 			await bot.notify_payment(action, to_mapping(reward))
 
 async def fetch_coef():
-	global coef
 	while True:
 		async with AccountsClient([]) as c:
 			coef = await c.get_coef(None)
 			if coef is not None:
+				set_coef(coef)
 				return
 		await asyncio.sleep(1)
 

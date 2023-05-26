@@ -16,6 +16,10 @@ from helper.async_helper import *
 coef = None
 removed_keys = []
 
+def set_coef(c: float):
+	global coef
+	coef = c
+
 async def last_block_logger():
 	prev = None
 	while True:
