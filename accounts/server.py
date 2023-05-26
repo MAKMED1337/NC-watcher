@@ -72,19 +72,24 @@ class ConnectionHandler:
 
 	async def proceed_client(self):	
 		tasks = []
-		try:
-			while self.conn.is_active():
-				packet: Packet = await self.conn.read(None, timeout=TIMEOUT)
-				assert isinstance(packet, Packet | None), type(packet)
-				if packet is None:
-					break
-				
+		while self.conn.is_active():
+			try:
+				packet: Packet = await self.conn.read(timeout=TIMEOUT)
+				assert isinstance(packet, Packet), type(packet)
 				tasks.append(asyncio.create_task(self._proceed_call(Response(self.conn, packet))))
-		finally:
-			unlock(self.accounts)
-			for task in tasks:
-				task.cancel()
-			await self.conn.close()
+			except TimeoutError:
+				if all([task.done() for task in tasks]):
+					print('Probably forgot to close connection', self.accounts)
+					break
+				else:
+					continue
+			except Exception:
+				break
+		
+		unlock(self.accounts)
+		for task in tasks:
+			task.cancel()
+		await self.conn.close()
 
 	async def _proceed_call(self, resp: Response):
 		await resp.respond(await self.execute_call(resp.data))
