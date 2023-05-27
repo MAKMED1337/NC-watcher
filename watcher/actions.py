@@ -54,7 +54,7 @@ class TaskInfo(ListTaskInfo):
 		self.resubmits = data['resubmits'] + int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
 		self.reward = data['reward']
 		self.reviews = data['reviews']
-		self.comment = data['comment']
+		self.comment = data.get('comment', None) #old accepted task, any value is fine
 		self.ideas = data.get('nightsky_requests', [])
 
 def feq(a: float, b: float) -> bool:
