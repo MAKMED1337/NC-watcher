@@ -1,8 +1,7 @@
-from helper.report_exceptions import report
-from .config import provider
-from .block_retriever import retrieve_new_blocks, auto_retry
-
 import asyncio
+from helper.report_exceptions import report
+from helper.provider_config import provider
+from .block_retriever import retrieve_new_blocks, auto_retry
 from .last_block import *
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 import base64

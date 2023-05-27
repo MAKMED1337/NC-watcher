@@ -6,10 +6,11 @@ from pydantic import BaseModel
 from enum import Enum
 from typing import Any
 
+from helper.provider_config import provider
 from near.signer import Signer, KeyPair
 from near import transactions
 from near.account import Account
-from near.providers import JsonProvider, FinalityTypes
+from near.providers import FinalityTypes
 
 class PostType(Enum):
 	data = 'body'
@@ -56,21 +57,19 @@ class NearCrowdAccount:
 		return self.get_tx_args(name=name)
 
 	async def check_account(self):
-		async with JsonProvider('https://rpc.mainnet.near.org') as provider:
-			account = Account(provider, self._signer)
-			await account.start()
-			return await account.view_function(contract_id, 'is_account_whitelisted', {'account_id': self._signer.account_id})
+		account = Account(provider, self._signer)
+		await account.start()
+		return await account.view_function(contract_id, 'is_account_whitelisted', {'account_id': self._signer.account_id})
 
 	#return public keys
 	@staticmethod
 	async def get_access_keys(account_id: str) -> list[str]:
 		result = []
-		async with JsonProvider('https://rpc.mainnet.near.org') as provider:
-			for key in (await provider.get_access_key_list(account_id, FinalityTypes.FINAL))['keys']:
-				access_key = key['access_key']
-				permission = access_key['permission']
-				if permission == 'FullAccess' or permission['FunctionCall']['receiver_id'] == contract_id:
-					result.append(key['public_key'])
+		for key in (await provider.get_access_key_list(account_id, FinalityTypes.FINAL))['keys']:
+			access_key = key['access_key']
+			permission = access_key['permission']
+			if permission == 'FullAccess' or permission['FunctionCall']['receiver_id'] == contract_id:
+				result.append(key['public_key'])
 		return result
 
 

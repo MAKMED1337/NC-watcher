@@ -1,11 +1,11 @@
 from helper.main_handler import main_handler
-from helper.report_exceptions import report_exception, stop_reporter, report
-from .config import provider, bot
+from helper.report_exceptions import report_exception, stop_reporter
+from .config import bot
 
 import asyncio
+from helper.provider_config import provider
 from .paymens_resolver import resolve_payments
 from .unpaid_rewards import UnpaidRewards, ActionEnum
-from typing import Any
 from helper.db_config import db, start as db_start, to_mapping
 from accounts.client import AccountsClient
 from.last_task_state import LastTaskState
