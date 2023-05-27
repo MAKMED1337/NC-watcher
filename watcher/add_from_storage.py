@@ -53,7 +53,6 @@ async def add_account(account_id: str, private_key: str):
 		
 			await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
 			await UnpaidRewards.clear(account_id)
-			await ConnectedAccounts.add(793975166, account_id, private_key)
 	print('OK:', account_id)
 
 async def main():
