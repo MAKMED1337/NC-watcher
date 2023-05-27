@@ -18,7 +18,11 @@ class JsonProvider(object):
 		else:
 			self._rpc_addr = rpc_addr
 		
-		self._session = aiohttp.ClientSession()
+		self._session = None
+
+	def start(self):
+		if self._session is None:
+			self._session = aiohttp.ClientSession()
 
 	async def close(self):
 		await self._session.close()
@@ -39,7 +43,7 @@ class JsonProvider(object):
 			'id': 'dontcare',
 			'jsonrpc': '2.0'
 		}
-
+		
 		async with self._session.post(self.rpc_addr(), json=j, timeout=timeout) as resp:
 			resp.raise_for_status()
 			content = await resp.json()

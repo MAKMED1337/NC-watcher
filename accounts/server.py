@@ -4,7 +4,8 @@ from helper.IPC import Server, FuncCall, Connection, Response, Packet
 from helper.main_handler import main_handler
 from helper.report_exceptions import report_exception
 
-from .nearcrowd_account import NearCrowdAccount, V2
+from .nearcrowd_account import NearCrowdAccount
+from helper.provider_config import provider
 from .accounts_db import Accounts
 import helper.db_config as db_config
 from .locks import get_lock
@@ -115,11 +116,16 @@ async def on_client_connect(conn: Connection):
 	await c.proceed_client()
 
 async def start():
+	provider.start()
 	await db_config.start()
 	await server.start()
 	sd_notify.Notifier().ready()
 
 	await server.run()
+
+async def stop():
+	await provider.close()
+	await server.stop()
 
 if __name__ == '__main__':
 	main_handler(start, report_exception, server.close)

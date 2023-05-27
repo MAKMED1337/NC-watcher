@@ -40,6 +40,7 @@ async def fetch_coef():
 
 async def start():
 	global block_logger
+	provider.start()
 	await db_start()
 	await bot.connect()
 	block_logger = asyncio.create_task(last_block_logger())
