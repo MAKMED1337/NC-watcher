@@ -11,6 +11,7 @@ from typing import Any
 from helper.db_config import db
 from accounts.client import AccountsClient
 from helper.async_helper import *
+from .config import block_logger_interval
 
 coef = None
 removed_keys = []
@@ -114,4 +115,4 @@ async def last_block_logger():
 			exit(1)
 
 		prev = block_id
-		await asyncio.sleep(5 * 60)
+		await asyncio.sleep(block_logger_interval.seconds)
