@@ -127,7 +127,7 @@ class SingleAccountsClient(AccountsClient):
 
 	@property
 	def connected(self) -> bool:
-		return self.connected_ids == self.account_ids
+		return super().connected and self.connected_ids == self.account_ids
 
 	async def connect(self) -> bool:
 		await super().connect()
