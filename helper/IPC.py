@@ -14,7 +14,7 @@ class Connection:
 		return self._reader is not None
 
 	async def close(self):
-		if self.connected:
+		if not self.connected:
 			return
 		
 		self._reader = None
