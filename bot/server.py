@@ -60,7 +60,9 @@ async def remove_key(account_id: str, private_key: str):
 	await ConnectedAccounts.remove_key(account_id, private_key)
 
 async def notify_mod_message(account_id: str, msg: str):
-	await send_to_connected(account_id, f'Moderators have sent you the following message:\n\n<pre>{html.escape(msg)}</pre>')
+	text = f'Account: <code>{account_id}</code>\n\n'
+	text += f'Moderators have sent you the following message:\n\n<pre>{html.escape(msg)}</pre>'
+	await send_to_connected(account_id, text[:4096])
 
 @server.on_connect
 async def on_client_connect(conn: Connection):
