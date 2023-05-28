@@ -18,9 +18,6 @@ class Connection:
 			return
 		
 		self._reader = None
-		if self._writer.can_write_eof():
-			self._writer.write_eof()
-			await self._writer.drain()
 		self._writer.close()
 		await self._writer.wait_closed()
 		self._writer = None
