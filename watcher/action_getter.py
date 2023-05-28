@@ -10,7 +10,7 @@ async def get_diff(action: Awaitable[IAction], state: LastTaskState) -> tuple[li
 	action: IAction = await action
 	diff = action.diff(state)
 
-	if state.ended == action.has_ended() or state.resubmits == action.info.resubmits:
+	if state.ended == action.has_ended() and state.resubmits == action.info.resubmits:
 		return diff, None
 	
 	state.ended, state.resubmits = action.has_ended(), action.info.resubmits
