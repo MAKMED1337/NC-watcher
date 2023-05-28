@@ -38,8 +38,5 @@ async def verify_keys(account_id: str) -> list[str]:
 
 async def _delete_key(account_id: str, private_key: str):
 	await Accounts.delete_key(account_id, private_key)
-	try:
-		async with BotClient() as bot:
-			await bot.remove_key(account_id, private_key)
-	except Exception:
-		pass
+	async with BotClient() as bot:
+		await bot.remove_key(account_id, private_key, None)
