@@ -10,11 +10,15 @@ class Connection:
 		self._writer = writer
 
 	@property
-	def connected(self) -> bool:
+	def _connected(self) -> bool:
 		return self._reader is not None
 
+	@property
+	def connected(self) -> bool:
+		return self._connected
+
 	async def close(self):
-		if not self.connected:
+		if not self._connected:
 			return
 		
 		self._reader = None
@@ -26,7 +30,7 @@ class Connection:
 		await self.close()
 
 	def is_active(self) -> bool:
-		if not self.connected or self._reader.at_eof(): #not sure about eof
+		if not self._connected or self._reader.at_eof(): #not sure about eof
 			return False
 		return True
 
@@ -55,7 +59,7 @@ class Connection:
 			return on_exception
 	
 	def __del__(self): #to remove stupid mistakes
-		assert not self.connected
+		assert not self._connected
 
 class Client(Connection):
 	def __init__(self, port: int):
@@ -63,7 +67,7 @@ class Client(Connection):
 		self._port = port
 	
 	async def connect(self) -> bool:
-		if self.connected:
+		if self._connected:
 			return True
 
 		try:
