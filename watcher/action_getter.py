@@ -13,8 +13,7 @@ async def get_diff(action: Awaitable[IAction], state: LastTaskState) -> tuple[li
 	if state.ended == action.has_ended() or state.resubmits == action.info.resubmits:
 		return diff, None
 	
-	state.ended = action.has_ended()
-	state.resubmits = action.info.resubmits
+	state.ended, state.resubmits = action.has_ended(), action.info.resubmits
 	return diff, state
 
 async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states: dict[int, LastTaskState], action_type: IAction) -> tuple[list[IAction], list[LastTaskState]]:
