@@ -125,9 +125,12 @@ class SingleAccountsClient(AccountsClient):
 		self.account_ids = [account_id]
 		self.account_id = account_id
 
+	@property
+	def connected(self) -> bool:
+		return self.connected_ids == self.account_ids
+
 	async def connect(self) -> bool:
 		await super().connect()
-		self.connected = self.connected_ids == self.account_ids
 		return self.connected
 
 	async def set_accounts(self, *args, **kwargs):
