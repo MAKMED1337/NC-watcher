@@ -9,8 +9,12 @@ class Connection:
 		self._reader = reader
 		self._writer = writer
 
+	@property
+	def connected(self) -> bool:
+		return self._reader is not None
+
 	async def close(self):
-		if self._reader is None:
+		if self.connected:
 			return
 		
 		self._reader = None
@@ -25,7 +29,7 @@ class Connection:
 		await self.close()
 
 	def is_active(self) -> bool:
-		if self._reader is None or self._writer is None or self._reader.at_eof():
+		if not self.connected or self._reader.at_eof(): #not sure about eof
 			return False
 		return True
 
@@ -54,17 +58,22 @@ class Connection:
 			return on_exception
 	
 	def __del__(self): #to remove stupid mistakes
-		assert self._reader is None
+		assert not self.connected
 
 class Client(Connection):
 	def __init__(self, port: int):
 		super().__init__(None, None)
 		self._port = port
 	
-	async def connect(self):
-		if self._reader is not None:
-			return
-		super().__init__(*await asyncio.open_connection('127.0.0.1', self._port))
+	async def connect(self) -> bool:
+		if self.connected:
+			return True
+
+		try:
+			super().__init__(*await asyncio.open_connection('127.0.0.1', self._port))
+			return True
+		except Exception:
+			return False
 
 	async def __aenter__(self):
 		await self.connect()
