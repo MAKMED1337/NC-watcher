@@ -14,7 +14,7 @@ async def main():
 
 	while True:
 		async with AccountsClient() as c:
-			mod_messages = await c.get_mod_message()
+			mod_messages = await c.get_mod_message({})
 		
 		for account_id, message in mod_messages.items():
 			if 'id' not in message:
