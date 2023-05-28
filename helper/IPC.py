@@ -22,8 +22,11 @@ class Connection:
 			return
 		
 		self._reader = None
-		self._writer.close()
-		await self._writer.wait_closed()
+		try:
+			self._writer.close()
+			await self._writer.wait_closed()
+		except Exception:
+			pass
 		self._writer = None
 
 	async def __aexit__(self, *args):
