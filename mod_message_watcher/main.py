@@ -1,10 +1,9 @@
 from helper.main_handler import main_handler
-from helper.report_exceptions import report_exception, stop_reporter, report
+from helper.report_exceptions import report_exception, stop_reporter
 from .config import bot, timeout
-from accounts.client import AccountsClient
+from accounts.client import AccountsClient, QueryParams
 from .acknowledged_messages import AcknowledgedMessages
 
-from typing import Any
 from helper.db_config import db, start as db_start
 import asyncio
 
@@ -14,7 +13,7 @@ async def main():
 
 	while True:
 		async with AccountsClient() as c:
-			mod_messages = await c.get_mod_message({})
+			mod_messages = await c.get_mod_message(QueryParams(on_exception={}))
 		
 		for account_id, message in mod_messages.items():
 			if 'id' not in message:
