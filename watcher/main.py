@@ -24,13 +24,20 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 		
 		if result is None:
 			return
-	
+
 		for action, reward in result:
 			await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
 		await LastTaskState.bulk_update([LastTaskState(**to_mapping(i)) for i in states])
 
 		for action, reward in result:
 			await bot.notify_payment(action, to_mapping(reward))
+
+		print(account_id, action_type, '->')
+		for action, reward in result:
+			print(action.info, to_mapping(reward))
+		for state in states:
+			print(to_mapping(state))
+		print('end')
 
 async def fetch_coef():
 	while True:

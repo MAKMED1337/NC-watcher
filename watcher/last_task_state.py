@@ -12,14 +12,10 @@ class LastTaskState(Base):
 
 	@staticmethod
 	async def update(account_id: str, task_id: int, ended: bool, resubmits=None):
-		print('state update:', account_id, task_id, ended, resubmits)
 		await db.execute(insert(LastTaskState).values((account_id, task_id, ended, resubmits)).on_duplicate_key_update(ended=ended, resubmits=resubmits))
 	
 	@staticmethod
 	async def bulk_update(values: list['LastTaskState']):
-		for i in values:
-			print('state update:', i.account_id, i.task_id, i.ended, i.resubmits)
-		
 		stmt = 'INSERT INTO LastTaskState VALUES(:account_id, :task_id, :ended, :resubmits) ON DUPLICATE KEY UPDATE ended = :ended, resubmits = :resubmits' #unable to use ORM for execute many
 		await db.execute_many(stmt, [to_mapping(i) for i in values])
 
