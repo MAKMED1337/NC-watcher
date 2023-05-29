@@ -20,18 +20,6 @@ def set_coef(c: float):
 	global coef
 	coef = c
 
-async def last_block_logger():
-	prev = None
-	while True:
-		block_id = get_last_block_id()
-		print('block_id:', block_id)
-		if block_id == prev:
-			await report(f'blocks stuck on {block_id}')
-			exit(1)
-
-		prev = block_id
-		await asyncio.sleep(5 * 60)
-
 async def add_reward_if_connected(tx_id: str, account_id: str, cost: float, action: ActionEnum, adjustment: int = None):
 	if await ConnectedAccounts.is_connected(account_id):
 		await UnpaidRewards.add(tx_id, account_id, cost, coef, action, adjustment)
