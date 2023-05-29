@@ -1,7 +1,6 @@
-from .actions import IAction, modes
+from .actions import IAction, Review, modes
 from accounts.client import SingleAccountsClient
 from .last_task_state import LastTaskState
-from .config import bot
 import asyncio
 from typing import Awaitable
 
@@ -10,7 +9,7 @@ async def get_diff(action: Awaitable[IAction], state: LastTaskState) -> tuple[li
 	action: IAction = await action
 	diff = action.diff(state)
 
-	if state.ended == action.has_ended() and state.resubmits == action.info.resubmits:
+	if state.ended == action.has_ended() and (isinstance(action, Review) or state.resubmits == action.info.resubmits):
 		return diff, None
 	
 	state.ended, state.resubmits = action.has_ended(), action.info.resubmits
