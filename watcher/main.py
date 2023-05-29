@@ -21,6 +21,9 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 		actions, states = await get_updates_for_action(account_id, get_proto_by_enum(action_type))
 		rewards = await UnpaidRewards.get(account_id, action_type)
 		result = resolve_payments(actions, rewards)
+		
+		if result is None:
+			return
 	
 		for action, reward in result:
 			await UnpaidRewards.remove_by_tx(reward.tx_id, account_id)
