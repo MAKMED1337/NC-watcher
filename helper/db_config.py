@@ -23,17 +23,20 @@ db = databases.Database(connection_url.set(drivername='mysql+asyncmy', query={'p
 async def fetch_all_column(query: ClauseElement | str, values: dict = None) -> list[Record]:
 	return [r[0] for r in await db.fetch_all(query, values)]
 
+class AttrDict(dict):
+	def __init__(self, *args, **kwargs):
+		super(AttrDict, self).__init__(*args, **kwargs)
+		self.__dict__ = self
 
-def to_mapping(table: Base) -> dict[str, Any]:
+def to_mapping(table: Base) -> AttrDict:
 	try:
-		return table._mapping
+		keys = table.__table__.columns.keys()
 	except Exception:
-		pass
+		keys = table._mapping.keys()
 
-	res = table.__dict__
-	res.pop('_sa_instance_state', None)
-
-	assert len(set(res.keys()).symmetric_difference(set(table.__table__.columns.keys()))) == 0
+	res = AttrDict()
+	for i in keys:
+		res[i] = getattr(table, i)
 	return res
 
 async def start():
