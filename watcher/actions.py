@@ -220,16 +220,16 @@ class Review(IAction):
 		correct_verdict = review['before_resubmit'] == 0 and status == 2
 		return int(info.reward * int(my_verdict == correct_verdict))
 
-actions: list[IAction] = [Task(), Review()]
+action_prototypes: list[IAction] = [Task(), Review()]
 
 def get_proto_by_enum(db_type: ActionEnum) -> IAction:
-	for i in actions:
+	for i in action_prototypes:
 		if i.get_enum() == db_type:
 			return i
 	assert False
 
 async def load_action_by_info(account: SingleAccountsClient, info: ListTaskInfo) -> IAction:
-	for i in actions:
+	for i in action_prototypes:
 		if i.is_proto(info):
 			return await i.load(account, info)
 	assert False
