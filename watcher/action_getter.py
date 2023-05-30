@@ -31,7 +31,7 @@ async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states:
 	diff = []
 	for i, _ in updates:
 		diff.extend(i)
-	return diff, [i[1] for i in updates if i[1] is not None]
+	return diff, [state for _, state in updates if state is not None]
 
 async def get_updates_for_action(account_id: str, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
 	async with SingleAccountsClient(account_id) as account:
