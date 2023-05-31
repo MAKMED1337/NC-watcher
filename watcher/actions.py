@@ -16,7 +16,7 @@ power = 1e3
 class ModeInfo:
 	name: str
 	resubmits: int
-	max_exercises: int = 0
+	max_exercises: int
 
 	def percent(self, resubmits: int) -> int:
 		assert 0 <= resubmits <= self.resubmits
@@ -33,8 +33,8 @@ class ModeInfo:
 		return result
 
 modes: dict[int, ModeInfo] = {
-	18: ModeInfo('Sunshine / Sunset', 4),
-	750: ModeInfo('Acadé', 10)
+	18: ModeInfo('Sunshine / Sunset', 4, 0), #no additional task payment
+	750: ModeInfo('Acadé', 10, 20)
 }
 
 @dataclass
