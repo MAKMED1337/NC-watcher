@@ -140,15 +140,18 @@ class Task(IAction):
 
 	def is_same(self, reward: UnpaidRewards) -> bool:
 		cost = self.calculate_cost() * reward.coef
-		
 		if feq(cost, reward.cost):
 			return True
 		
-		if self.info.quality != 1:
+		info = self.info
+		#sometimes rewards are higher than they needed to be (LQ -> GQ, GQ -> OS)
+		if info.quality == 2:
 			return False
-		return feq((1 + deviation) * cost, reward.cost) or feq((1 - deviation) * cost, reward.cost)
 
-	def calculate_cost(self) -> int:
+		cost = self.calculate_cost_without_quality() * reward.coef
+		return feq((1 + deviation * info.quality) * cost, reward.cost) #1 quality up
+
+	def calculate_cost_without_quality(self) -> float:
 		info = self.info
 		if info.status in (3, 4):
 			return 0
@@ -162,9 +165,13 @@ class Task(IAction):
 			pillar = self.pillar
 			cost += modes[info.mode].exercises_cost(len(pillar.get('exercises', []))) #exercises
 
+		return cost
+
+	def calculate_cost(self) -> int:
+		cost = self.calculate_cost_without_quality()
+		info = self.info
 		assert 0 <= info.quality <= 2
 		quality_coef = 1 + deviation * (info.quality - 1)
-
 		cost *= quality_coef #quality(LQ/OS)
 		return int(cost)
 
