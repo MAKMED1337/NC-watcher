@@ -57,14 +57,13 @@ async def start():
 
 async def iteration():
 	await fetch_coef()
-		
+	await process_new_blocks()
+	
 	actions = await UnpaidRewards.get_unpaid_action_types()
 	tasks = [asyncio.sleep(1)]
 	for account_id, action in actions:
 		tasks.append(resolve_and_pay(account_id, action))
 	await wait_pool(tasks)
-
-	await process_new_blocks()
 
 async def main():
 	await start()
