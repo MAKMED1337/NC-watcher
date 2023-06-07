@@ -87,9 +87,9 @@ class ConnectionHandler:
 			except Exception:
 				break
 		
-		unlock(self.accounts)
 		for task in tasks:
 			task.cancel()
+		unlock(self.accounts)
 		await self.conn.close()
 
 	async def _proceed_call(self, resp: Response):
