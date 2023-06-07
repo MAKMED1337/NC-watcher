@@ -23,6 +23,7 @@ class Connection:
 		
 		self._reader = None
 		try:
+			await self._writer.drain()
 			self._writer.close()
 			await self._writer.wait_closed()
 		except Exception:
@@ -61,8 +62,10 @@ class Connection:
 				raise
 			return on_exception
 	
-	def __del__(self): #to remove stupid mistakes
-		assert not self._connected
+	def __del__(self):
+		if self._connected:
+			self._writer.close() #probably unsafe, but better than assert False
+
 
 class Client(Connection):
 	def __init__(self, port: int):
