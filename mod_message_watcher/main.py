@@ -16,7 +16,7 @@ async def main():
 			mod_messages = await c.get_mod_message(QueryParams(on_exception={}))
 		
 		for account_id, message in mod_messages.items():
-			if 'id' not in message:
+			if message is None or 'id' not in message:
 				continue
 			
 			msg_id = message['id']
