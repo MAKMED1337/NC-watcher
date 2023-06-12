@@ -247,5 +247,5 @@ def get_payment_cost(reward: UnpaidRewards) -> int:
 	
 	assert 0 <= reward.adjustment <= 2
 	if reward.adjustment == 0:
-		return 0
+		assert False, 'IDK, probably -25%'
 	return (1 + deviation * (reward.adjustment - 1)) * reward.cost
