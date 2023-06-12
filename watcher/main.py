@@ -34,7 +34,7 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 		rewards = await UnpaidRewards.get(account_id, action_type)
 		result = resolve_payments(tx_actions, rewards)
 		
-		if result is None or len(free_actions) == 0:
+		if result is None and len(free_actions) == 0:
 			return
 
 		print(account_id, action_type, '->')
