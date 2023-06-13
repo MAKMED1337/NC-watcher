@@ -58,7 +58,7 @@ class TaskInfo(ListTaskInfo):
 		self.ideas = data.get('nightsky_requests', [])
 
 def feq(a: float, b: float) -> bool:
-	return abs(a - b) <= 1
+	return abs(a - b) <= 3 #because of NC's internal rounds, it's probably will not hurt
 
 class IAction:
 	info: TaskInfo
