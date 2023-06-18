@@ -64,7 +64,10 @@ class Connection:
 	
 	def __del__(self):
 		if self._connected:
-			self._writer.close() #probably unsafe, but better than assert False
+			try:
+				self._writer.close() #probably unsafe, but better than assert False
+			except:
+				pass
 
 
 class Client(Connection):
