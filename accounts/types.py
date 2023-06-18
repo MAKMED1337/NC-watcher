@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 @dataclass
 class ListTaskInfo:
@@ -75,3 +76,13 @@ class ModMessage:
 	def __init__(self, data: dict):
 		self.id = data['id']
 		self.msg = data['msg']
+
+@dataclass
+class Pillar:
+	pillar_id: int
+	exercises: dict[int, Any] | None
+	#add more fields if needed
+
+	def __init__(self, data: dict):
+		self.pillar_id = data['pillar_id']
+		self.exercises = data.get('exercises')

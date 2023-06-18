@@ -91,7 +91,7 @@ class AccountsClient(FuncClient):
 		return await self._query(V2(path=f'v2/get_task/{mode}/{task_id}', args={'user_task_id': task_id}), params, typify(InnerTaskInfo))
 
 	async def get_pillar(self, pillar_id: int, params=QueryParams()):
-		return await self._query_json(V2(path=f'pillars/pillar/{pillar_id}', name='pillars'), params)
+		return await self._query(V2(path=f'pillars/pillar/{pillar_id}', name='pillars'), params, typify(Pillar))
 
 	async def get_task_list(self, mode: int, params=QueryParams()):
 		def callback(r) -> list[ListTaskInfo] | None:
@@ -159,7 +159,7 @@ class SingleAccountsClient:
 	async def get_task(self, mode: int, task_id: int, params=QueryParams()) -> InnerTaskInfo:
 		return await self.__client.get_task(mode, task_id, params)
 
-	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> dict:
+	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> Pillar:
 		return await self.__client.get_pillar(pillar_id, params)
 
 	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
