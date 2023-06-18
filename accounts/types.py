@@ -21,11 +21,24 @@ class ListTaskInfo:
 		self.status = data['status']
 
 @dataclass
+class Review:
+	verdict: int #0/1
+	comment: str
+	mine: bool
+	before_resubmit: bool | None #None on your task review
+
+	def __init__(self, data: dict):
+		self.verdict = data['verdict']
+		self.comment = data['comment']
+		self.mine = data['mine']
+		self.before_resubmit = bool(data['before_resubmit']) if 'before_resubmit' in data else None
+
+@dataclass
 class InnerTaskInfo:
 	pillar_id: int | None
 	resubmits: int
 	reward: int
-	reviews: list
+	reviews: list[Review]
 	comment: str | None
 	ideas: list[dict] = field(default_factory=list)
 
@@ -33,7 +46,7 @@ class InnerTaskInfo:
 		self.pillar_id = data.get('pillar_id')
 		self.resubmits = data['resubmits']
 		self.reward = data['reward']
-		self.reviews = data['reviews']
+		self.reviews = [Review(r) for r in data['reviews']]
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
 
