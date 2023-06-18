@@ -156,7 +156,7 @@ class SingleAccountsClient(AccountsClient):
 		return await super().get_task(mode, task_id, params)
 
 	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> dict:
-		return await super().get_pillar(pillar_id. params)
+		return await super().get_pillar(pillar_id, params)
 
 	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
 		return await super().get_task_list(mode, params)
