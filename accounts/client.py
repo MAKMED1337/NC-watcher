@@ -34,7 +34,6 @@ class AccountsClient(FuncClient):
 	def __init__(self, account_ids: list[str] | None = None):
 		super().__init__(PORT)
 		self.account_ids = account_ids
-		self.queries = []
 	
 	async def connect(self) -> list[str]:
 		await super().connect()
@@ -114,52 +113,57 @@ class AccountsClient(FuncClient):
 		return await self._query(V2(path=f'mod_message', name='mod'), params, callback)
 
 
-class SingleAccountsClient(AccountsClient):
+class SingleAccountsClient:
 	def __init__(self, account_id: str):
-		super().__init__(PORT)
-		self.account_ids = [account_id]
+		self.__client = AccountsClient([account_id])
 		self.account_id = account_id
+
+		original_query = self.__client._query
+		async def query(*args, **kwargs) -> Any:
+			r = await original_query(*args, **kwargs)
+			return r[self.account_id]
+		self.__client._query = query #maybe create more abstract class, that accepts query as function
+
+	async def __aenter__(self):
+		await self.__client.__aenter__()
+		return self
+	
+	async def __aexit__(self, *args):
+		await self.__client.__aexit__(*args)
 
 	@property
 	def connected(self) -> bool:
-		return super().connected and self.connected_ids == self.account_ids
+		return self.__client.connected and self.__client.connected_ids == [self.account_id]
 
 	async def connect(self) -> bool:
-		await super().connect()
+		await self.__client.connect()
 		return self.connected
 
-	async def add_key(self, *args, **kwargs):
-		raise NotImplementedError
-
 	async def get_access_keys(self, on_exception: Any=Exception) -> list[str]:
-		return await self.call(on_exception, 'get_access_keys', self.account_id)
+		return await self.__client.get_access_keys(on_exception)
 
 	async def verify_keys(self, on_exception: Any=Exception) -> list[str]:
-		return await self.call(on_exception, 'verify_keys', self.account_id)
+		return await self.__client.verify_keys(on_exception)
 	
 
-	
-	async def _query(self, q: V2, params=QueryParams(), callback: Callable[[str], T]=identity) -> T:
-		r = await super()._query(q, params, callback)
-		return r[self.account_id]
 	
 	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()) -> str:
-		return await super().claim_task(mode, Q, params)
+		return await self.__client.claim_task(mode, Q, params)
 
 	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()) -> str:
-		return await super().claim_review(mode, Q, params)
+		return await self.__client.claim_review(mode, Q, params)
 
 	async def get_status(self, mode: int, params=QueryParams()) -> Status:
-		return await super().get_status(mode, params)
+		return await self.__client.get_status(mode, params)
 
 	async def get_task(self, mode: int, task_id: int, params=QueryParams()) -> InnerTaskInfo:
-		return await super().get_task(mode, task_id, params)
+		return await self.__client.get_task(mode, task_id, params)
 
 	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> dict:
-		return await super().get_pillar(pillar_id, params)
+		return await self.__client.get_pillar(pillar_id, params)
 
 	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
-		return await super().get_task_list(mode, params)
+		return await self.__client.get_task_list(mode, params)
 
 	async def get_mod_message(self, params=QueryParams()) -> ModMessage | None:
-		return await super().get_mod_message(params)
+		return await self.__client.get_mod_message(params)
