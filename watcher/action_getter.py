@@ -33,17 +33,13 @@ async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states:
 		diff.extend(i)
 	return diff, [state for _, state in updates if state is not None]
 
-async def get_updates_for_action(account_id: str, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
-	async with SingleAccountsClient(account_id) as account:
-		if not account.connected:
-			return [], []
+async def get_updates_for_action(account: SingleAccountsClient, action: IAction) -> tuple[list[IAction], list[LastTaskState]]:
+	states = await LastTaskState.get(account.account_id)
+	states = {i.task_id: i for i in states}
 
-		states = await LastTaskState.get(account_id)
-		states = {i.task_id: i for i in states}
-
-		diff = []
-		new_states = []
-		for r in await asyncio.gather(*[get_updates_for_mode(account, mode, states, action) for mode in modes]):
-			diff.extend(r[0])
-			new_states.extend(r[1])
-		return diff, new_states
+	diff = []
+	new_states = []
+	for r in await asyncio.gather(*[get_updates_for_mode(account, mode, states, action) for mode in modes]):
+		diff.extend(r[0])
+		new_states.extend(r[1])
+	return diff, new_states

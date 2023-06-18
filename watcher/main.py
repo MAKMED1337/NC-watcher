@@ -27,8 +27,11 @@ def reward_from_action(account_id: str, action: IAction):
 	return UnpaidRewards(tx_id='NULL', account_id=account_id, cost=action.calculate_cost(), coef=coef, action=action.get_enum(), adjustment=1)
 
 async def resolve_and_pay(account_id: str, action_type: ActionEnum):
-	async with db.transaction():
-		actions, states = await get_updates_for_action(account_id, get_proto_by_enum(action_type))
+	async with db.transaction(), SingleAccountsClient(account_id) as account:
+		if not account.connected:
+			return
+
+		actions, states = await get_updates_for_action(account, get_proto_by_enum(action_type))
 		tx_actions, free_actions = split_tx_dependent(actions) #some actions don't appear in txs
 
 		rewards = await UnpaidRewards.get(account_id, action_type)
