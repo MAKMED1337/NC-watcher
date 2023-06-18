@@ -40,7 +40,7 @@ class InnerTaskInfo:
 	reward: int
 	reviews: list[Review]
 	comment: str | None
-	ideas: list[dict] = field(default_factory=list)
+	ideas: list[dict]
 
 	def __init__(self, data: dict):
 		self.pillar_id = data.get('pillar_id')
