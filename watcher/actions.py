@@ -1,5 +1,5 @@
 from .unpaid_rewards import UnpaidRewards, ActionEnum
-from accounts.client import SingleAccountsClient, ListTaskInfo
+from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo
 from dataclasses import dataclass, asdict, field
 from .last_task_state import LastTaskState
 import copy
@@ -37,31 +37,19 @@ modes: dict[int, ModeInfo] = {
 	750: ModeInfo('Acadé', 10, 20)
 }
 
-@dataclass
-class TaskInfo(ListTaskInfo):
-	pillar_id: int | None
-	resubmits: int
-	reward: int
-	reviews: list
-	comment: str | None
-	ideas: list[dict] = field(default_factory=list)
-
-	def __init__(self, list_info: ListTaskInfo, data: dict):
+class FullTaskInfo(ListTaskInfo, InnerTaskInfo):
+	def __init__(self, list_info: ListTaskInfo, task_info: InnerTaskInfo):
 		for k, v in asdict(list_info).items():
 			setattr(self, k, v)
-		
-		self.pillar_id = data.get('pillar_id', None)
-		self.resubmits = data['resubmits'] + int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
-		self.reward = data['reward']
-		self.reviews = data['reviews']
-		self.comment = data['comment']
-		self.ideas = data.get('nightsky_requests', [])
+		for k, v in asdict(task_info).items():
+			setattr(self, k, v)
+		self.resubmits += int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
 
 def feq(a: float, b: float) -> bool:
 	return abs(a - b) <= 3 #because of NC's internal rounds, it's probably will not hurt
 
 class IAction:
-	info: TaskInfo
+	info: FullTaskInfo
 
 	@property
 	def task_id(self) -> int:
@@ -128,7 +116,7 @@ class Task(IAction):
 		obj = Task()
 
 		task_id = info.task_id
-		info = TaskInfo(info, await account.get_task(info.mode, task_id))
+		info = FullTaskInfo(info, await account.get_task(info.mode, task_id))
 		obj.info = info
 
 		if info.pillar_id is not None:
@@ -207,7 +195,7 @@ class Review(IAction):
 			assert info.status == 2
 			task = {'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None}
 		
-		info = TaskInfo(info, task)
+		info = FullTaskInfo(info, task)
 		obj.info = info
 
 		return obj

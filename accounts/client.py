@@ -6,8 +6,10 @@ from helper.IPC import FuncClient
 from .nearcrowd_account import V2
 import json
 from pydantic import BaseModel
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable, TypeVar
+from .types import *
+
+T = TypeVar('T')
 
 def json_or_none(s: str | None):
 	if s is None:
@@ -18,27 +20,14 @@ class QueryParams(BaseModel):
 	on_exception: Any = Exception
 	retries: int | None = None
 
-@dataclass
-class ListTaskInfo:
-	mode: int
-	task_id: int
-	my_quality: int
-	my_verdict: int
-	quality: int
-	short_descr: str
-	status: int
-
-	def __init__(self, data: dict):
-		self.mode = data['mode']
-		self.task_id = data['user_task_id']
-		self.my_quality = data['my_quality']
-		self.my_verdict = data['my_verdict']
-		self.quality = data['quality']
-		self.short_descr = data['short_descr']
-		self.status = data['status']
-
-def identity(x):
+def identity(x: T) -> T:
 	return x
+
+def typify(cls: T):
+	def f(j: str) -> T | None:
+		j: dict = json_or_none(j)
+		return cls(j) if j is not None else None
+	return f
 
 #TODO: add normal types, insted of dict[str, ...]
 class AccountsClient(FuncClient):
@@ -72,14 +61,15 @@ class AccountsClient(FuncClient):
 	async def get_coef(self, on_exception: Any=Exception) -> float:
 		return await self.call(on_exception, 'get_coef')
 
-	async def get_access_keys(self, account_id: str, on_exception: Any=Exception):
+	async def get_access_keys(self, account_id: str, on_exception: Any=Exception) -> list[str]:
 		return await self.call(on_exception, 'get_access_keys', account_id)
 
 	async def verify_keys(self, account_id: str, on_exception: Any=Exception) -> list[str]:
 		return await self.call(on_exception, 'verify_keys', account_id)
 
 
-	async def _query(self, q: V2, params=QueryParams(), callback=identity) -> dict[str, str]:
+
+	async def _query(self, q: V2, params=QueryParams(), callback: Callable[[str], T]=identity) -> dict[str, T]:
 		if params.retries is not None:
 			q.retry_count = params.retries
 		return {k: callback(v) for k, v in (await self.call(params.on_exception, 'query', q)).items()}
@@ -89,23 +79,23 @@ class AccountsClient(FuncClient):
 
 
 
-	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()) -> dict[str, str]:
+	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()):
 		return await self._query(V2(path=f'v2/claim_task/{mode}', Q=Q), params)
 
-	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()) -> dict[str, str]:
+	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()):
 		return await self._query(V2(path=f'v2/claim_review/{mode}', Q=Q), params)
 
-	async def get_status(self, mode: int, params=QueryParams()) -> dict[str, dict]:
-		return await self._query_json(V2(path=f'v2/taskset/{mode}'), params)
+	async def get_status(self, mode: int, params=QueryParams()):
+		return await self._query(V2(path=f'v2/taskset/{mode}'), params, typify(Status))
 
-	async def get_task(self, mode: int, task_id: int, params=QueryParams()) -> dict[str, dict]:
-		return await self._query_json(V2(path=f'v2/get_task/{mode}/{task_id}', args={'user_task_id': task_id}), params)
+	async def get_task(self, mode: int, task_id: int, params=QueryParams()):
+		return await self._query(V2(path=f'v2/get_task/{mode}/{task_id}', args={'user_task_id': task_id}), params, typify(InnerTaskInfo))
 
-	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> dict[str, dict]:
+	async def get_pillar(self, pillar_id: int, params=QueryParams()):
 		return await self._query_json(V2(path=f'pillars/pillar/{pillar_id}', name='pillars'), params)
 
-	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
-		def callback(r):
+	async def get_task_list(self, mode: int, params=QueryParams()):
+		def callback(r) -> list[ListTaskInfo] | None:
 			r = json_or_none(r)
 			if r is None:
 				return None
@@ -115,8 +105,13 @@ class AccountsClient(FuncClient):
 			return [ListTaskInfo(i) for i in r]
 		return await self._query(V2(path=f'v2/get_old_tasks/{mode}', name='v2'), params, callback)
 
-	async def get_mod_message(self, params=QueryParams()) -> dict[str, Any]: #id: int, msg: str or empty
-		return await self._query_json(V2(path=f'mod_message', name='mod'), params)
+	async def get_mod_message(self, params=QueryParams()):
+		def callback(r) -> ModMessage | None:
+			r = json_or_none(r)
+			if r is None or len(r) == 0:
+				return None
+			return ModMessage(r)
+		return await self._query(V2(path=f'mod_message', name='mod'), params, callback)
 
 
 class SingleAccountsClient(AccountsClient):
@@ -133,12 +128,38 @@ class SingleAccountsClient(AccountsClient):
 		await super().connect()
 		return self.connected
 
-	async def set_accounts(self, *args, **kwargs):
-		await super().set_accounts(*args, **kwargs)
-
 	async def add_key(self, *args, **kwargs):
 		raise NotImplementedError
+
+	async def get_access_keys(self, on_exception: Any=Exception) -> list[str]:
+		return await self.call(on_exception, 'get_access_keys', self.account_id)
+
+	async def verify_keys(self, on_exception: Any=Exception) -> list[str]:
+		return await self.call(on_exception, 'verify_keys', self.account_id)
 	
-	async def _query(self, *args, **kwargs) -> str:
-		r = await super()._query(*args, **kwargs)
+
+	
+	async def _query(self, q: V2, params=QueryParams(), callback: Callable[[str], T]=identity) -> T:
+		r = await super()._query(q, params, callback)
 		return r[self.account_id]
+	
+	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()) -> str:
+		return await super().claim_task(mode, Q, params)
+
+	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()) -> str:
+		return await super().claim_review(mode, Q, params)
+
+	async def get_status(self, mode: int, params=QueryParams()) -> Status:
+		return await super().get_status(mode, params)
+
+	async def get_task(self, mode: int, task_id: int, params=QueryParams()) -> InnerTaskInfo:
+		return await super().get_task(mode, task_id, params)
+
+	async def get_pillar(self, pillar_id: int, params=QueryParams()) -> dict:
+		return await super().get_pillar(pillar_id. params)
+
+	async def get_task_list(self, mode: int, params=QueryParams()) -> list[ListTaskInfo]:
+		return await super().get_task_list(mode, params)
+
+	async def get_mod_message(self, params=QueryParams()) -> ModMessage | None:
+		return await super().get_mod_message(params)

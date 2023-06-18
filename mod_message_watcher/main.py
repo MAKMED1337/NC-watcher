@@ -16,15 +16,15 @@ async def main():
 			mod_messages = await c.get_mod_message(QueryParams(on_exception={}))
 		
 		for account_id, message in mod_messages.items():
-			if message is None or 'id' not in message:
+			if message is None:
 				continue
 			
-			msg_id = message['id']
+			msg_id = message.id
 			if await AcknowledgedMessages.is_acknowledged(msg_id):
 				continue
 			
 			try:
-				await bot.notify_mod_message(account_id, message['msg'])
+				await bot.notify_mod_message(account_id, message.msg)
 				await AcknowledgedMessages.acknowledge(msg_id)
 			except Exception as exc:
 				await report_exception(exc)

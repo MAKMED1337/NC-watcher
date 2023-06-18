@@ -23,7 +23,7 @@ async def is_connected(account_id: str) -> bool:
 async def get_coef() -> float:
 	return await NearCrowdAccount.get_coef()
 
-async def get_access_keys(account_id: str):
+async def get_access_keys(account_id: str) -> list[str]:
 	return await NearCrowdAccount.get_access_keys(account_id)
 
 #returns removed keys
