@@ -116,7 +116,12 @@ class Task(IAction):
 		obj = Task()
 
 		task_id = info.task_id
-		info = FullTaskInfo(info, await account.get_task(info.mode, task_id))
+
+		task = await account.get_task(info.mode, task_id)
+		if task is None: #could be in bugged tasks, like in SS without ?sunset=... specified
+			task = InnerTaskInfo({"resubmits": 0, "reward": 0, "reviews": [], "comment": None})
+		
+		info = FullTaskInfo(info, task)
 		obj.info = info
 
 		if info.pillar_id is not None:
