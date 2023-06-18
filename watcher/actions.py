@@ -1,6 +1,6 @@
 from .unpaid_rewards import UnpaidRewards, ActionEnum
-from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo
-from dataclasses import dataclass, asdict, field
+from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo, Pillar
+from dataclasses import dataclass, asdict
 from .last_task_state import LastTaskState
 import copy
 
@@ -37,6 +37,7 @@ modes: dict[int, ModeInfo] = {
 	750: ModeInfo('Acadé', 10, 20)
 }
 
+@dataclass
 class FullTaskInfo(ListTaskInfo, InnerTaskInfo):
 	def __init__(self, list_info: ListTaskInfo, task_info: InnerTaskInfo):
 		for k, v in asdict(list_info).items():
@@ -81,7 +82,7 @@ class IAction:
 		raise NotImplementedError
 
 class Task(IAction):
-	pillar: dict
+	pillar: Pillar
 
 	@staticmethod
 	def is_proto(info: ListTaskInfo):
@@ -119,7 +120,7 @@ class Task(IAction):
 
 		task = await account.get_task(info.mode, task_id)
 		if task is None: #could be in bugged tasks, like in SS without ?sunset=... specified
-			task = InnerTaskInfo({"resubmits": 0, "reward": 0, "reviews": [], "comment": None})
+			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None})
 		
 		info = FullTaskInfo(info, task)
 		obj.info = info
@@ -154,9 +155,9 @@ class Task(IAction):
 
 		cost += 0.4 * power * len(info.ideas) #ideas
 
-		if self.pillar is not None:
-			pillar = self.pillar
-			cost += modes[info.mode].exercises_cost(len(pillar.get('exercises', []))) #exercises
+		pillar = self.pillar
+		if pillar is not None:
+			cost += modes[info.mode].exercises_cost(len(pillar.exercises or [])) #exercises
 
 		return cost
 
