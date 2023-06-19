@@ -21,10 +21,15 @@ async def test_AC_GQ2OS():
 	account = FakeSingleAccount([info])
 
 	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	assert r.has_ended()
 	assert feq(r.calculate_cost(), 740) #raw cost
 
-	reward = UnpaidRewards(cost=1017, coef=1.1, action=ActionEnum.task, adjustment=1)
-	assert r.is_same(reward) #GQ -> OS
+	assert r.is_same(UnpaidRewards(cost=814, coef=1.1, action=ActionEnum.task, adjustment=1)) #coef
+	assert r.is_same(UnpaidRewards(cost=1017, coef=1.1, action=ActionEnum.task, adjustment=1)) #coef, GQ -> OS
+
+	assert not r.is_same(UnpaidRewards(cost=611, coef=1.1, action=ActionEnum.task, adjustment=1)) #can't be GQ -> LQ
+	assert not r.is_same(UnpaidRewards(cost=0, coef=1.1, action=ActionEnum.task, adjustment=0)) #can't be RJ
+	assert not r.is_same(UnpaidRewards(cost=1000, coef=1.1, action=ActionEnum.task, adjustment=1)) #random value
 
 @pytest.mark.asyncio
 async def test_bugged_task(): #appears in list, but didn't have inner body
@@ -37,3 +42,36 @@ async def test_bugged_task(): #appears in list, but didn't have inner body
 
 	r = await Task.load(account, list_info) #mustn't crash
 	assert feq(r.calculate_cost(), 0)
+
+@pytest.mark.asyncio
+async def test_RJ():
+	pillar = create_pillar_exercises(10)
+	info = create_task(18, 0, 5, pillar, 2, 740, [])
+	account = FakeSingleAccount([info])
+
+	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	assert not r.has_ended()
+
+	diff = r.diff(LastTaskState(ended=False, resubmits=0))
+	assert len(diff) == 2
+
+	for i in diff:
+		assert feq(i.calculate_cost(), 0)
+
+@pytest.mark.asyncio
+async def test_AC_resubmits():
+	pillar = create_pillar_exercises(10)
+	info = create_task(18, 2, 2, pillar, 1, 1110, [])
+	account = FakeSingleAccount([info])
+
+	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	assert r.has_ended()
+	assert feq(r.calculate_cost(), 1247) #raw cost
+
+	assert r.is_same(UnpaidRewards(cost=1372, coef=1.1, action=ActionEnum.task, adjustment=1))
+	assert not r.is_same(UnpaidRewards(cost=0, coef=1.1, action=ActionEnum.task, adjustment=0))
+
+	diff = r.diff(LastTaskState(ended=False, resubmits=0))
+	assert len(diff) == 2
+	assert feq(diff[0].calculate_cost(), 0)
+	assert diff[1] == r
