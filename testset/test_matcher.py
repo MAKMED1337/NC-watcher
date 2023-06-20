@@ -1,4 +1,4 @@
-from watcher.tx_matcher import match_txs
+from watcher.tx_resolver import match_txs
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
 from watcher.actions import *
 from testset.test_task_cost import create_task
