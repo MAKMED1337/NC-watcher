@@ -2,7 +2,8 @@ from .unpaid_rewards import UnpaidRewards
 from .actions import IAction
 from .kuhn import Kuhn
 
-def resolve_payments(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]] | None:
+#matcher 1 to 1
+def match_payments(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]] | None:
 	n, m = len(actions), len(rewards)
 	if n != m:
 		return None
