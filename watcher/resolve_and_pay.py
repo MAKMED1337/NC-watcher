@@ -1,6 +1,6 @@
 from.last_task_state import LastTaskState
 from .action_getter import get_updates_for_action
-from .paymens_resolver import match_payments
+from .payments_matcher import match_payments
 from .actions import *
 from helper.db_config import db, to_mapping
 from .block_processor import coef
