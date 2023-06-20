@@ -1,6 +1,6 @@
 from.last_task_state import LastTaskState
 from .action_getter import get_updates_for_action
-from .payments_matcher import match_payments
+from .tx_matcher import match_txs
 from .actions import *
 from helper.db_config import db, to_mapping
 from .block_processor import coef
@@ -15,7 +15,7 @@ def reward_from_action(account_id: str, action: IAction):
 
 def resolve_and_create_fake_tx(account_id: str, actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]] | None:
 	tx_actions, free_actions = split_tx_dependent(actions) #some actions don't appear in txs
-	result = match_payments(tx_actions, rewards)
+	result = match_txs(tx_actions, rewards)
 	
 	if result is None:
 		return

@@ -3,7 +3,7 @@ from .actions import IAction
 from .kuhn import Kuhn
 
 #matcher 1 to 1
-def match_payments(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]] | None:
+def match_txs(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tuple[IAction, UnpaidRewards]] | None:
 	n, m = len(actions), len(rewards)
 	if n != m:
 		return None
