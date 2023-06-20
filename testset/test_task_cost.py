@@ -9,18 +9,18 @@ def create_pillar_exercises(exercises_count: int):
 	pillar_iter += 1
 	return Pillar({'pillar_id': pillar_iter, 'exercises': [0] * exercises_count})
 
-def create_task(mode: int, quality: int, status: int,
-	pillar: Pillar | None, resubmits: int, reward: int, ideas: list[dict] | None) -> Info: 
-
+def create_task_info(mode: int, quality: int, status: int, pillar: Pillar | None, resubmits: int, reward: int, ideas: list[dict] | None) -> Info:
 	return Info(mode, 0, 2, quality, status, pillar, resubmits, reward, [], ideas or [])
+
+async def create_task(mode: int, quality: int, status: int, exercises_count: int, resubmits: int, reward: int, ideas: list[dict] | None) -> Task:
+	pillar = create_pillar_exercises(exercises_count)
+	info = create_task_info(mode, quality, status, pillar, resubmits, reward, ideas)
+	account = FakeSingleAccount([info])
+	return await Task.load(account, (await account.get_task_list(info.mode))[0])
 
 @pytest.mark.asyncio
 async def test_AC_GQ2OS():
-	pillar = create_pillar_exercises(10)
-	info = create_task(18, 1, 2, pillar, 0, 740, [])
-	account = FakeSingleAccount([info])
-
-	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	r = await create_task(18, 1, 2, 10, 0, 740, [])
 	assert r.has_ended()
 	assert feq(r.calculate_cost(), 740) #raw cost
 
@@ -34,7 +34,7 @@ async def test_AC_GQ2OS():
 @pytest.mark.asyncio
 async def test_bugged_task(): #appears in list, but didn't have inner body
 	pillar = create_pillar_exercises(0)
-	info = create_task(18, 0, 5, pillar, 0, 740, []) #random quality
+	info = create_task_info(18, 0, 5, pillar, 0, 740, []) #random quality
 	account = FakeSingleAccount([info])
 
 	list_info = (await account.get_task_list(info.mode))[0]
@@ -45,11 +45,7 @@ async def test_bugged_task(): #appears in list, but didn't have inner body
 
 @pytest.mark.asyncio
 async def test_RJ():
-	pillar = create_pillar_exercises(10)
-	info = create_task(18, 0, 5, pillar, 2, 740, [])
-	account = FakeSingleAccount([info])
-
-	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	r = await create_task(18, 0, 5, 10, 2, 740, [])
 	assert not r.has_ended()
 
 	diff = r.diff(LastTaskState(ended=False, resubmits=0))
@@ -60,11 +56,7 @@ async def test_RJ():
 
 @pytest.mark.asyncio
 async def test_AC_resubmits():
-	pillar = create_pillar_exercises(10)
-	info = create_task(18, 2, 2, pillar, 1, 1110, [])
-	account = FakeSingleAccount([info])
-
-	r = await Task.load(account, (await account.get_task_list(info.mode))[0])
+	r = await create_task(18, 2, 2, 10, 1, 1110, [])
 	assert r.has_ended()
 	assert feq(r.calculate_cost(), 1247) #raw cost
 
