@@ -38,6 +38,11 @@ async def start():
 	provider.start()
 	await db_start()
 	await bot.connect()
+
+	#process new blocks for first time without limits
+	await fetch_coef()
+	await process_new_blocks()
+
 	block_logger = asyncio.create_task(last_block_logger())
 	wrong_review_watcher = asyncio.create_task(review_watcher())
 
