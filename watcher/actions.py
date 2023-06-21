@@ -1,6 +1,6 @@
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo, Pillar
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, fields
 from .last_task_state import LastTaskState
 import copy
 
@@ -40,10 +40,10 @@ modes: dict[int, ModeInfo] = {
 @dataclass
 class FullTaskInfo(ListTaskInfo, InnerTaskInfo):
 	def __init__(self, list_info: ListTaskInfo, task_info: InnerTaskInfo):
-		for k, v in asdict(list_info).items():
-			setattr(self, k, v)
-		for k, v in asdict(task_info).items():
-			setattr(self, k, v)
+		for field in fields(list_info):
+			setattr(self, field.name, getattr(list_info, field.name))
+		for field in fields(task_info):
+			setattr(self, field.name, getattr(task_info, field.name))
 		self.resubmits += int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
 
 def feq(a: float, b: float) -> bool:
@@ -179,16 +179,21 @@ class Review(IAction):
 		return ActionEnum.review
 	
 	def get_my_review(self) -> dict | None:
-		return next((review for review in self.info.reviews if review['mine']), None)
+		return next((review for review in self.info.reviews if review.mine), None)
 
-	def has_ended(self) -> bool:
+	def was_rejected(self) -> bool:
 		review = self.get_my_review()
-		before_resubmit = review['before_resubmit'] if review is not None else False
-		return self.info.status != 1 or before_resubmit
+		return review.before_resubmit if review is not None else False
+	
+	def has_ended(self) -> bool:
+		return self.info.status != 1 or self.was_rejected()
 	
 	def diff(self, state: LastTaskState) -> list['Review']:
 		assert state.ended == False
-		return [self] if self.has_ended() else []
+		r = copy.deepcopy(self)
+		if self.was_rejected():
+			r.info.status = 3
+		return [r] if self.has_ended() else []
 
 	@staticmethod
 	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
@@ -212,13 +217,13 @@ class Review(IAction):
 	def calculate_cost(self) -> int:
 		info = self.info
 		for r in info.reviews:
-			assert 0 <= r['before_resubmit'] <= 1
+			assert 0 <= r.before_resubmit <= 1
 
 		my_verdict = info.my_verdict
 		status = info.status
 		review = self.get_my_review()
 		
-		correct_verdict = review['before_resubmit'] == 0 and status == 2
+		correct_verdict = review.before_resubmit == 0 and status == 2
 		return int(info.reward * int(my_verdict == correct_verdict))
 
 action_prototypes: list[IAction] = [Task(), Review()]

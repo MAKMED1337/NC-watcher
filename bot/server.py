@@ -39,11 +39,11 @@ async def notify_payment(action: IAction, reward: UnpaidRewards):
 	if reward.action == ActionEnum.review:
 		text += 'Your verdict: <b>' + ('Rejected' if info.my_verdict == 0 else qualities[info.my_quality]) + '</b>'
 		text += ', final verdict: <b>' + ('Rejected' if info.status == 3 else qualities[info.quality]) + '</b>\n'
-		text += f'Your comment: <pre>{html.escape(action.get_my_review()["comment"])}</pre>\n\n'
+		text += f'Your comment: <pre>{html.escape(action.get_my_review().comment)}</pre>\n\n'
 	else:
 		text += 'Verdict: <b>' + ('Rejected' if info.status == 3 else qualities[info.quality]) + '</b>\n'
 		if len(info.reviews) > 0:
-			text += f'Comment: <pre>{html.escape(info.reviews[-1]["comment"])}</pre>\n\n'
+			text += f'Comment: <pre>{html.escape(info.reviews[-1].comment)}</pre>\n\n'
 		else:
 			text += f'Your comment(resubmitted): <pre>{html.escape(info.comment)}</pre>\n\n'
 		text += f'Resubmits: <b>{info.resubmits}</b>\n\n'
