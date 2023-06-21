@@ -1,6 +1,6 @@
 from watcher.tx_resolver import split_tx_dependent
-from testset.test_review_cost import create_review
-from testset.test_task_cost import create_task
+from testset.test_review import create_review
+from testset.test_task import create_task
 import pytest
 
 @pytest.mark.asyncio

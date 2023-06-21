@@ -1,8 +1,8 @@
 from watcher.tx_resolver import match_txs
 from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
 from watcher.actions import *
-from testset.test_task_cost import create_task
-from testset.test_review_cost import create_review
+from testset.test_task import create_task
+from testset.test_review import create_review
 import pytest
 
 def is_matching(actions: list[IAction], rewards: list[UnpaidRewards]) -> bool:

@@ -56,3 +56,13 @@ async def test_unended_review_AC():
 async def test_unended_review_RJ():
 	r = await create_review(18, 0, None, 0, 3500)
 	assert not r.has_ended()
+
+@pytest.mark.asyncio
+async def test_verdict_after_resubmit():
+	r = await create_review(18, 0, None, 1, 3500) #RJ
+	diff = r.diff(LastTaskState(ended=False))
+	assert len(diff) == 1 and diff[0].info.status == 3
+
+	r = await create_review(18, 1, None, 1, 3500) #AC
+	diff = r.diff(LastTaskState(ended=False))
+	assert len(diff) == 1 and diff[0].info.status == 3
