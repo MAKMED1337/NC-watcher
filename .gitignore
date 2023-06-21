@@ -2,6 +2,6 @@
 *.session
 *.session-journal
 sessionStorage.json
-last_block.txt
 reports/
 .vscode/
+backup-*.sql

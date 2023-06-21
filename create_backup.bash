@@ -1,0 +1,1 @@
+mysqldump mirror --single-transaction --quick --lock-tables=false > backup-$(date +%"F-%T").sql
