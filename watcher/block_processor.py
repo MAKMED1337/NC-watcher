@@ -2,7 +2,6 @@ import asyncio
 from helper.report_exceptions import report
 from helper.provider_config import provider
 from .block_retriever import retrieve_new_blocks, auto_retry
-from .last_block import *
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 import base64
 import json
@@ -76,7 +75,7 @@ async def process_new_blocks() -> tuple[int, int]:
 async def last_block_logger():
 	prev = None
 	while True:
-		block_id = get_last_block_id()
+		block_id = await ProcessedBlocks.get_last_id()
 		print('block_id:', block_id)
 		if block_id == prev:
 			await report(f'blocks stuck on {block_id}')

@@ -1,7 +1,6 @@
 import asyncio
 from helper.provider_config import provider
 from near.providers import FinalityTypes, JsonProviderError
-from .last_block import *
 from typing import Any, Callable
 from helper.async_helper import *
 from .processed_blocks import ProcessedBlocks
