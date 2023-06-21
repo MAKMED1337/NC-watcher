@@ -7,7 +7,7 @@ from accounts.client import AccountsClient, SingleAccountsClient
 from watcher.actions import IAction, load_action_by_info, modes
 from watcher.last_task_state import LastTaskState
 from watcher.unpaid_rewards import UnpaidRewards
-from .connected_accounts import ConnectedAccounts
+from ..connected_accounts import ConnectedAccounts
 import html
 from enum import Enum
 
