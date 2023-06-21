@@ -12,9 +12,9 @@ from helper.db_config import db
 from accounts.client import AccountsClient
 from helper.async_helper import *
 from .config import block_logger_interval
+from .processed_blocks import ProcessedBlocks
 
 coef = None
-removed_keys = []
 
 def set_coef(c: float):
 	global coef
@@ -33,15 +33,13 @@ async def process_reward(tx_id: str, args: dict):
 		assert 0 <= adjustment <= 2
 		await add_reward_if_connected(tx_id, reviewer, args['mnear_per_review'], ActionEnum.review, adjustment)
 
-async def verify_keys(c: AccountsClient, account_id: str):
+async def verify_keys(account_id: str):
 	if await ConnectedAccounts.is_connected(account_id):
-		await c.verify_keys(account_id)
+		async with AccountsClient([]) as c:
+			await c.verify_keys(account_id)
 
 #returns list[hash, args]
-def parse_chunk(chunk: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
-	global removed_keys
-
-	result = []
+async def process_chunk(chunk: dict[str, Any]):
 	for transaction in chunk['transactions']:
 		if transaction['signer_id'] == 'app.nearcrowd.near':
 			for action in transaction['actions']:
@@ -53,45 +51,27 @@ def parse_chunk(chunk: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
 					continue
 				
 				args = json.loads(base64.b64decode(f['args']).decode())
-				result.append((transaction['hash'], args))
+				await process_reward(transaction['hash'], args)
 		
 		for action in transaction['actions']:
 			if 'DeleteKey' in action:
-				removed_keys.append(transaction['signer_id'])
-	
-	return result
+				await verify_keys(transaction['signer_id'])
 
 #blocks count, chunks count
 async def process_new_blocks() -> tuple[int, int]:
-	last_block_id = None
-	updates = []
-	
 	async def process_block(block: dict[str, Any]):
-		nonlocal last_block_id, updates
-
-		#block processing
 		block_id = block['header']['height']
-		if last_block_id is None or block_id > last_block_id:
-			last_block_id = block_id
 		
 		#chunk processing
 		#not using semaphore cause already called with semaphore and cause loop(like mutex)
 		chunks = await wait_pool([auto_retry(provider.get_chunk, chunk['chunk_hash']) for chunk in block['chunks']], use_semaphore=False)
-		for chunk in chunks:
-			updates.extend(parse_chunk(chunk))
 
-	await retrieve_new_blocks(get_last_block_id(), process_block)
+		async with db.transaction():
+			for chunk in chunks:
+				await process_chunk(chunk)
+			await ProcessedBlocks.set_processed(block_id)
 
-	async with AccountsClient([]) as c:
-		global removed_keys
-		await wait_pool([verify_keys(c, account_id) for account_id in removed_keys])
-		removed_keys.clear()
-
-	async with db.transaction():
-		await wait_pool([process_reward(hash, args) for hash, args in updates])
-
-		if last_block_id is not None:
-			update_last_block_id(last_block_id)
+	await retrieve_new_blocks(process_block)
 
 async def last_block_logger():
 	prev = None
