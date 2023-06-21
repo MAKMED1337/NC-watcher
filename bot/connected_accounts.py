@@ -3,10 +3,9 @@ from sqlalchemy import Column, BigInteger, VARCHAR
 from sqlalchemy import select, delete, and_
 from sqlalchemy.dialects.mysql import insert
 
-#FIXME: multiple users could change key, but they need to have access only to their one
 class ConnectedAccounts(Base):
 	__tablename__ = 'ConnectedAccounts'
-	tg_id = Column(BigInteger, primary_key=True)	
+	tg_id = Column(BigInteger, primary_key=True)
 	account_id = Column(VARCHAR(64), primary_key=True)
 	private_key = Column(VARCHAR(96), nullable=False)
 
