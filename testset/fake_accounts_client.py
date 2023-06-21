@@ -10,7 +10,7 @@ def generate_task_id():
 	return task_iter
 
 def make_review(verdict: int, before_resubmit: int, mine: bool) -> Review:
-	data = {"verdict": verdict, "comment": "", "mine": mine, "before_resubmit": before_resubmit}
+	data = {'verdict': verdict, 'comment': '', 'mine': mine, 'before_resubmit': before_resubmit}
 	if before_resubmit is None:
 		data.pop('before_resubmit')
 	return Review(data)
