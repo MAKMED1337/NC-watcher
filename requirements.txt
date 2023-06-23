@@ -1,8 +1,9 @@
 aiohttp==3.8.3
 base58==2.1.1
-databases==0.7.0 #https://github.com/encode/databases/pull/540 with custom fixes
+databases @ git+https://github.com/MAKMED1337/databases.git
 ed25519==1.5
-fastapi==0.95.1
-pydantic==1.10.4
+pydantic==1.10.7
+pytest==7.3.1
+sd_notify==0.1.0
 SQLAlchemy==2.0.10
 Telethon==1.28.5
