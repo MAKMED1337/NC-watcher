@@ -13,7 +13,7 @@ connection_url = URL.create(
 	os.getenv('db_password'),
 	os.getenv('host', 'localhost'),
 	os.getenv('port', '3306'),
-	'mirror' #db_name
+	os.getenv('db_name')
 )
 
 Base = declarative_base()

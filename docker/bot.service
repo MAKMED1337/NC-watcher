@@ -1,0 +1,18 @@
+[Unit]
+Description=UI bot
+BindsTo=mysql.service reporter.service
+After=mysql.service reporter.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=notify
+
+EnvironmentFile=/etc/systemd/system/bot.env
+
+WorkingDirectory=/watcher
+ExecStart=/usr/local/bin/python3.11 -u -m bot.main
+
+Restart=always
+RestartSec=1s

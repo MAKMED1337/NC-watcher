@@ -1,0 +1,16 @@
+[Unit]
+Description=NC watcher
+BindsTo=mysql.service accounts.service reporter.service bot.service
+After=mysql.service accounts.service reporter.service bot.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=/watcher
+ExecStart=/usr/local/bin/python3.11 -u -m watcher.main
+
+Restart=always
+RestartSec=60s

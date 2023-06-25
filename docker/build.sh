@@ -1,0 +1,1 @@
+docker build . -f docker/Dockerfile --tag watcher_stable --build-arg github_token=$github_token

@@ -1,6 +1,7 @@
 aiohttp==3.8.3
 base58==2.1.1
-databases @ git+https://github.com/MAKMED1337/databases.git
+mysql
+databases[asyncmy] @ git+https://github.com/MAKMED1337/databases.git
 ed25519==1.5
 pydantic==1.10.7
 pytest==7.3.1

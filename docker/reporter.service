@@ -1,0 +1,15 @@
+[Unit]
+Description=reporter(logger)
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=notify
+
+EnvironmentFile=/etc/systemd/system/reporter.env
+
+WorkingDirectory=/watcher
+ExecStart=/usr/local/bin/python3.11 -u -m reporter.server
+
+Restart=always

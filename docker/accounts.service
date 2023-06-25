@@ -1,0 +1,15 @@
+[Unit]
+Description=accounts
+BindsTo=mysql.service reporter.service
+After=mysql.service reporter.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=notify
+
+WorkingDirectory=/watcher
+ExecStart=/usr/local/bin/python3.11 -u -m accounts.server
+
+Restart=always
