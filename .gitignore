@@ -5,3 +5,4 @@ sessionStorage.json
 reports/
 .vscode/
 backup-*.sql
+*.env

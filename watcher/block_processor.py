@@ -37,7 +37,6 @@ async def verify_keys(account_id: str):
 		async with AccountsClient([]) as c:
 			await c.verify_keys(account_id)
 
-#returns list[hash, args]
 async def process_chunk(chunk: dict[str, Any]):
 	for transaction in chunk['transactions']:
 		if transaction['signer_id'] == 'app.nearcrowd.near':
@@ -56,8 +55,7 @@ async def process_chunk(chunk: dict[str, Any]):
 			if 'DeleteKey' in action:
 				await verify_keys(transaction['signer_id'])
 
-#blocks count, chunks count
-async def process_new_blocks() -> tuple[int, int]:
+async def process_new_blocks():
 	async def process_block(block: dict[str, Any]):
 		block_id = block['header']['height']
 		
