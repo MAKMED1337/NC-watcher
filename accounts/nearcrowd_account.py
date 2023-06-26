@@ -79,7 +79,7 @@ class NearCrowdAccount:
 		url = f'{api}{q.path}/{encodedTx}{q.Q}'
 		post = q.post
 
-		async with aiohttp.ClientSession() as session:
+		async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
 			if post is None:
 				request = session.get(url)
 			else:
@@ -106,7 +106,7 @@ class NearCrowdAccount:
 	async def fetch_accountless(path: str, retries: int=10):
 		for _ in range(retries):
 			try:
-				async with aiohttp.ClientSession() as session:
+				async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
 					async with session.get(f'{api}{path}') as response:
 						response.raise_for_status()
 						return await response.text()
