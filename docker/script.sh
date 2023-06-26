@@ -1,5 +1,3 @@
-export host="mysql_host"
-
 systemctl start reporter
 systemctl start accounts
 systemctl start bot

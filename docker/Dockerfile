@@ -3,10 +3,9 @@ FROM python:3.11
 RUN wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl3.py -O /usr/local/bin/systemctl
 RUN chmod +x /usr/local/bin/systemctl
 
-WORKDIR /watcher
-
 ARG github_token
-RUN git clone https://$github_token@github.com/MAKMED1337/NC-watcher.git
+RUN git clone https://$github_token@github.com/MAKMED1337/NC-watcher.git /watcher
+WORKDIR /watcher
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
