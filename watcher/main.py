@@ -7,9 +7,8 @@ from helper.provider_config import provider
 from .unpaid_rewards import UnpaidRewards, ActionEnum
 from helper.db_config import start as db_start
 from accounts.client import AccountsClient
-from helper.async_helper import *
+from helper.async_helper import wait_pool
 from .block_processor import process_new_blocks, set_coef, last_block_logger
-from .actions import *
 from bot.connected_accounts import ConnectedAccounts
 from .resolve_and_pay import resolve_and_pay
 

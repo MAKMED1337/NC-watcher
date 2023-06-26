@@ -1,5 +1,7 @@
-from testset.fake_accounts_client import *
-from watcher.actions import *
+from testset.fake_accounts_client import Info, make_review, FakeSingleAccount
+from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
+from watcher.last_task_state import LastTaskState
+from watcher.actions import Review, feq
 import pytest
 
 def create_review_info(mode: int, verdict: int, final_verdict: int | None, before_resubmit: bool, reward: int) -> Info: 
@@ -8,8 +10,8 @@ def create_review_info(mode: int, verdict: int, final_verdict: int | None, befor
 	else:
 		status = 2 if final_verdict == 1 else 3
 	return Info(mode=mode, my_quality=verdict, my_verdict=verdict, quality=verdict, status=status, reward=reward,
-	            reviews=[make_review(verdict, before_resubmit, True)],
-	            pillar=None, resubmits=0, ideas=[])
+	            reviews=[make_review(verdict, before_resubmit, True)], # noqa: E101
+	            pillar=None, resubmits=0, ideas=[]) # noqa: E101
 
 async def create_review(mode: int, verdict: int, final_verdict: int | None, before_resubmit: bool, reward: int) -> Review:
 	info = create_review_info(mode, verdict, final_verdict, before_resubmit, reward)

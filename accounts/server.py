@@ -9,7 +9,7 @@ from helper.provider_config import provider
 from .accounts_db import Accounts
 import helper.db_config as db_config
 from .locks import get_lock
-from .functions import *
+from .functions import * # noqa: F403
 import asyncio
 from typing import Any
 import sd_notify

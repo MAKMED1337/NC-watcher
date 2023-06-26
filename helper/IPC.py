@@ -66,7 +66,7 @@ class Connection:
 		if self._connected:
 			try:
 				self._writer.close() #probably unsafe, but better than assert False
-			except:
+			except Exception:
 				pass
 
 

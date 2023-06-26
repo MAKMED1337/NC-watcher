@@ -28,7 +28,7 @@ class BinarySerializer:
 				assert len(field_type) == 1    # TODO: Need to replace to Exception
 				if type(field_type[0]) == int:
 					assert type(value) == bytes, 'type(%s) = %s != bytes' % (value, type(value))    # TODO: Need to replace to Exception
-					assert len(value) == field_type[0], 'len(%s) = %s != %s' % (value, len(value), field_type[0])    # TODO: Need to replace to Exception
+					assert len(value) == field_type[0], 'len(%s) = %s != %s' % (value, len(value), field_type[0]) # TODO: Need to replace to Exception
 					self.array += bytearray(value)
 				else:
 					self.serialize_num(len(value), 4)

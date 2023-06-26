@@ -3,7 +3,6 @@ from .client import PORT
 from helper.IPC import Server, Connection, Packet, Response, FuncCall
 from helper.report_exceptions import report_exception
 from helper.bot_config import bot
-from helper.db_config import db
 
 from accounts.client import AccountsClient
 from watcher.actions import IAction, get_payment_cost, modes, qualities

@@ -2,7 +2,7 @@ from .client import PORT
 
 from helper.IPC import Server, Connection
 from helper.main_handler import main_handler
-from helper.bot_config import bot, run as run_bot, start as start_bot
+from helper.bot_config import bot, start as start_bot
 
 import asyncio
 from pathlib import Path

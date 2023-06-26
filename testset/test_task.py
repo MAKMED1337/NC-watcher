@@ -1,6 +1,8 @@
-from testset.fake_accounts_client import *
-from watcher.actions import *
-from watcher.unpaid_rewards import UnpaidRewards
+from testset.fake_accounts_client import FakeSingleAccount, Info
+from accounts.types import Pillar
+from watcher.unpaid_rewards import UnpaidRewards, ActionEnum
+from watcher.last_task_state import LastTaskState
+from watcher.actions import Task, feq
 import pytest
 
 pillar_iter = 0

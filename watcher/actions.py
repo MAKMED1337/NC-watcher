@@ -68,7 +68,7 @@ class IAction:
 		raise NotImplementedError
 	
 	def diff(self, state: LastTaskState) -> list['IAction']:
-		assert state.ended == False
+		assert not state.ended
 		raise NotImplementedError
 
 	@staticmethod
@@ -97,7 +97,7 @@ class Task(IAction):
 		return info.status in (2, 4)
 
 	def diff(self, state: LastTaskState) -> list['Task']:
-		assert state.ended == False
+		assert not state.ended
 		resubmits = state.resubmits or 0
 
 		res = []
@@ -189,7 +189,7 @@ class Review(IAction):
 		return self.info.status != 1 or self.was_rejected()
 	
 	def diff(self, state: LastTaskState) -> list['Review']:
-		assert state.ended == False
+		assert not state.ended
 		r = copy.deepcopy(self)
 		if self.was_rejected():
 			r.info.status = 3

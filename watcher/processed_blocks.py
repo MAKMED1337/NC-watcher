@@ -18,7 +18,7 @@ class ProcessedBlocks(Base):
 	
 	@staticmethod
 	async def get_unprocessed() -> list[int]:
-		return await fetch_all_column(select(ProcessedBlocks.block_id).where(ProcessedBlocks.processed == False))
+		return await fetch_all_column(select(ProcessedBlocks.block_id).where(ProcessedBlocks.processed == False)) # noqa: E712
 
 	@staticmethod
 	#[start, finish]

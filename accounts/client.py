@@ -2,12 +2,12 @@ PORT = 2001
 
 
 
-from helper.IPC import FuncClient
-from .nearcrowd_account import V2
-import json
-from pydantic import BaseModel
-from typing import Any, Callable, TypeVar
-from .types import *
+from helper.IPC import FuncClient # noqa: E402
+from .nearcrowd_account import V2 # noqa: E402
+import json # noqa: E402
+from pydantic import BaseModel # noqa: E402
+from typing import Any, Callable, TypeVar # noqa: E402
+from .types import ListTaskInfo, InnerTaskInfo, Status, ModMessage, Pillar # noqa: E402
 
 T = TypeVar('T')
 
@@ -110,7 +110,7 @@ class AccountsClient(FuncClient):
 			if r is None or len(r) == 0:
 				return None
 			return ModMessage(r)
-		return await self._query(V2(path=f'mod_message', name='mod'), params, callback)
+		return await self._query(V2(path='mod_message', name='mod'), params, callback)
 
 
 class SingleAccountsClient:

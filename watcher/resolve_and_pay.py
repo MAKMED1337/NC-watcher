@@ -1,7 +1,9 @@
 from.last_task_state import LastTaskState
+from accounts.client import SingleAccountsClient
+from .unpaid_rewards import ActionEnum, UnpaidRewards
 from .action_getter import get_updates_for_action
 from .tx_resolver import resolve_and_create_fake_tx
-from .actions import *
+from .actions import get_proto_by_enum
 from helper.db_config import db, to_mapping
 from .config import bot
 

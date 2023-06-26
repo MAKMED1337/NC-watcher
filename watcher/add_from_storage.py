@@ -1,12 +1,12 @@
 import asyncio
 from accounts.client import AccountsClient, SingleAccountsClient
+from accounts.types import ListTaskInfo
 from .last_task_state import LastTaskState
-from bot.connected_accounts import ConnectedAccounts
 from helper.db_config import start as db_start, db
 from .actions import modes
 import json
 from .unpaid_rewards import UnpaidRewards
-from .actions import *
+from .actions import IAction, load_action_by_info
 import traceback
 
 def get_account_id(s: str) -> str | None:
@@ -51,7 +51,9 @@ async def add_account(account_id: str, private_key: str):
 			actions: list[IAction] = await asyncio.gather(*actions)
 
 		
-			await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
+			await LastTaskState.bulk_update([
+				LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions
+			])
 			await UnpaidRewards.clear(account_id)
 	print('OK:', account_id)
 

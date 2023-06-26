@@ -20,7 +20,7 @@ class UnpaidRewards(Base):
 	@staticmethod
 	async def add(tx_id: str, account_id: str, cost: int, coef: float, action: ActionEnum, adjustment: int=None):
 		print('new reward:', tx_id, account_id, cost, coef, action, adjustment)
-		await db.execute(insert(UnpaidRewards).values((tx_id, account_id, cost, coef, action, adjustment)).on_duplicate_key_update(tx_id=tx_id)) #INSERT OR IGNORE
+		await db.execute(insert(UnpaidRewards).values((tx_id, account_id, cost, coef, action, adjustment)).on_duplicate_key_update(tx_id=tx_id))
 	
 	@staticmethod
 	async def get(account_id: str, action: ActionEnum) -> list['UnpaidRewards']:

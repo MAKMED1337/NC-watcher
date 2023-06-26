@@ -26,8 +26,9 @@ def match_txs(actions: list[IAction], rewards: list[UnpaidRewards]) -> list[tupl
 	return result
 
 def split_tx_dependent(actions: list[IAction]) -> tuple[list[IAction], list[IAction]]:
-	f = lambda i: isinstance(i, Task) or i.calculate_cost() != 0
-	return [i for i in actions if f(i)], [i for i in actions if not f(i)]
+	def is_dependent(action: IAction):
+		return isinstance(action, Task) or action.calculate_cost() != 0
+	return [i for i in actions if is_dependent(i)], [i for i in actions if not is_dependent(i)]
 
 def reward_from_action(account_id: str, action: IAction):
 	return UnpaidRewards(tx_id='NULL', account_id=account_id, cost=action.calculate_cost(), coef=coef, action=action.get_enum(), adjustment=1)

@@ -2,8 +2,8 @@ PORT = 2000
 
 
 
-from helper.IPC import Client
-import traceback
+from helper.IPC import Client # noqa: E402
+import traceback # noqa: E402
 
 class ReporterClient(Client):
 	def __init__(self):

@@ -1,5 +1,5 @@
 from accounts.client import QueryParams
-from accounts.types import *
+from accounts.types import ListTaskInfo, InnerTaskInfo, Pillar, Review
 from dataclasses import asdict, dataclass, field
 import copy
 

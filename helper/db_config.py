@@ -5,7 +5,6 @@ import databases
 from sqlalchemy.sql import ClauseElement
 from sqlalchemy.engine import URL
 from databases.interfaces import Record
-from typing import Any
 
 connection_url = URL.create(
 	'mysql',

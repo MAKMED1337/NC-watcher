@@ -2,10 +2,10 @@ PORT = 2002
 
 
 
-from helper.IPC import FuncClient
-from watcher.actions import IAction
-from watcher.unpaid_rewards import UnpaidRewards
-from typing import Any
+from helper.IPC import FuncClient # noqa: E402
+from watcher.actions import IAction # noqa: E402
+from watcher.unpaid_rewards import UnpaidRewards # noqa: E402
+from typing import Any # noqa: E402
 
 class BotClient(FuncClient):
 	def __init__(self):

@@ -51,7 +51,9 @@ async def add_account_unsafe(account_id: str, private_key: str):
 
 			actions: list[IAction] = await asyncio.gather(*actions)
 
-			await LastTaskState.bulk_update([LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions])
+			await LastTaskState.bulk_update([
+				LastTaskState(account_id=account_id, task_id=i.task_id, ended=i.has_ended(), resubmits=i.info.resubmits) for i in actions
+			])
 			await UnpaidRewards.clear(account_id)
 	return True
 

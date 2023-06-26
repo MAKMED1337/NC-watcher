@@ -2,7 +2,7 @@ import asyncio
 from helper.provider_config import provider
 from near.providers import FinalityTypes, JsonProviderError
 from typing import Any, Callable
-from helper.async_helper import *
+from helper.async_helper import wait_pool, COROS_LIMIT
 from .processed_blocks import ProcessedBlocks
 
 TRIES = 100

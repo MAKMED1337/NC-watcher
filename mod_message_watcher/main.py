@@ -4,7 +4,7 @@ from .config import bot, timeout
 from accounts.client import AccountsClient, QueryParams
 from .acknowledged_messages import AcknowledgedMessages
 
-from helper.db_config import db, start as db_start
+from helper.db_config import start as db_start
 import asyncio
 
 async def main():
