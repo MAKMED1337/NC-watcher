@@ -17,13 +17,14 @@ block_logger = None
 wrong_review_watcher = None
 
 async def fetch_coef():
-	while True:
+	for i in range(100):
 		async with AccountsClient([]) as c:
 			coef = await c.get_coef(None)
 			if coef is not None:
 				set_coef(coef)
 				return
 		await asyncio.sleep(1)
+	raise Exception('Too many tries to fetch coef')
 
 async def review_watcher():
 	while True:
