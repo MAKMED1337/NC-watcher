@@ -1,0 +1,5 @@
+**/__pycache__
+sessionStorage.json
+reports/
+.vscode/
+backup-*.sql

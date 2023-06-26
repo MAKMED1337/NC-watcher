@@ -11,7 +11,7 @@ from telethon import events
 import os
 import sd_notify
 
-GROUP_ID = 1830719850
+GROUP_ID = int(os.getenv('GROUP_ID'))
 reports = Path(__file__).parent / 'reports'
 
 log_index = 1

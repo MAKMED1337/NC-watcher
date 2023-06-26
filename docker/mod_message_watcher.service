@@ -9,6 +9,8 @@ WantedBy=multi-user.target
 [Service]
 Type=simple
 
+EnvironmentFile=/etc/systemd/system/database.env
+
 WorkingDirectory=/watcher
 ExecStart=/usr/local/bin/python3.11 -u -m mod_message_watcher.main
 

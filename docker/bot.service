@@ -9,6 +9,8 @@ WantedBy=multi-user.target
 [Service]
 Type=notify
 
+EnvironmentFile=/etc/systemd/system/database.env
+EnvironmentFile=/etc/systemd/system/tg_api.env
 EnvironmentFile=/etc/systemd/system/bot.env
 
 WorkingDirectory=/watcher
