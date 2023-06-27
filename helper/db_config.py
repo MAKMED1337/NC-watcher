@@ -2,9 +2,7 @@ import os
 from sqlalchemy.orm import declarative_base
 import sqlalchemy
 import databases
-from sqlalchemy.sql import ClauseElement
 from sqlalchemy.engine import URL
-from databases.interfaces import Record
 
 connection_url = URL.create(
 	'mysql',
@@ -18,9 +16,6 @@ connection_url = URL.create(
 Base = declarative_base()
 engine = sqlalchemy.create_engine(connection_url)
 db = databases.Database(connection_url.set(drivername='mysql+asyncmy', query={'pool_recycle': '3600'}).render_as_string(False))
-
-async def fetch_all_column(query: ClauseElement | str, values: dict = None) -> list[Record]:
-	return [r[0] for r in await db.fetch_all(query, values)]
 
 class AttrDict(dict):
 	def __init__(self, *args, **kwargs):

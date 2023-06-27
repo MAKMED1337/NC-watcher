@@ -1,4 +1,4 @@
-from helper.db_config import Base, db, fetch_all_column
+from helper.db_config import Base, db
 from sqlalchemy import Column, INTEGER, BOOLEAN
 from sqlalchemy import select, update, insert
 from sqlalchemy import func
@@ -18,7 +18,7 @@ class ProcessedBlocks(Base):
 	
 	@staticmethod
 	async def get_unprocessed() -> list[int]:
-		return await fetch_all_column(select(ProcessedBlocks.block_id).where(ProcessedBlocks.processed == False)) # noqa: E712
+		return await db.fetch_column(select(ProcessedBlocks.block_id).where(ProcessedBlocks.processed == False)) # noqa: E712
 
 	@staticmethod
 	#[start, finish]

@@ -1,4 +1,4 @@
-from helper.db_config import Base, db, fetch_all_column
+from helper.db_config import Base, db
 from sqlalchemy import Column, VARCHAR
 from sqlalchemy import select, delete, and_
 from sqlalchemy.dialects.mysql import insert
@@ -15,7 +15,7 @@ class Accounts(Base):
 
 	@staticmethod
 	async def get_keys(account_id: str) -> list[str]:
-		return await fetch_all_column(select(Accounts.private_key).where(Accounts.account_id == account_id))
+		return await db.fetch_column(select(Accounts.private_key).where(Accounts.account_id == account_id))
 
 	@staticmethod
 	async def is_connected(account_id: str) -> bool:
