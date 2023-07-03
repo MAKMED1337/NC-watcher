@@ -23,7 +23,7 @@ async def send_to_connected(account_id: str, text: str):
 			pass
 
 async def notify_payment(action: IAction, reward: UnpaidRewards):
-	print(action.info)
+	print(action.info.debug)
 	print(reward)
 	assert isinstance(action, IAction), type(action)
 

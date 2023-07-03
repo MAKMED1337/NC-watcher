@@ -22,7 +22,7 @@ async def resolve_and_pay(account_id: str, action_type: ActionEnum):
 
 		print(account_id, action_type, '->')
 		for action, reward in result:
-			print(action.info, to_mapping(reward))
+			print(action.info.debug, to_mapping(reward))
 		
 		for state in states:
 			print(to_mapping(state))

@@ -2,6 +2,7 @@ from .unpaid_rewards import UnpaidRewards, ActionEnum
 from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo, Pillar
 from dataclasses import dataclass, fields
 from .last_task_state import LastTaskState
+from typing import Any
 import copy
 
 qualities = ['Low Quality', 'Good', 'Outstanding', '', 'Has Mistakes']
@@ -45,6 +46,16 @@ class FullTaskInfo(ListTaskInfo, InnerTaskInfo):
 		for field in fields(task_info):
 			setattr(self, field.name, getattr(task_info, field.name))
 		self.resubmits += int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
+	
+	@property
+	def debug(self) -> dict[str, Any]:
+		result = {}
+		for field in fields(ListTaskInfo):
+			result[field.name] = getattr(self, field.name)
+		result['resubmits'] = self.resubmits
+		result['reward'] = self.reward
+		return result
+		
 
 def feq(a: float, b: float) -> bool:
 	return abs(a - b) <= 3 #because of NC's internal rounds, it's probably will not hurt
