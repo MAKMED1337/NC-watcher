@@ -10,6 +10,7 @@ from watcher.unpaid_rewards import UnpaidRewards
 from ..connected_accounts import ConnectedAccounts
 import html
 from enum import Enum
+from helper.report_exceptions import report_exception
 
 def get_account_id(s: str) -> str | None:
 	start = 'near-api-js:keystore:'
@@ -68,7 +69,8 @@ async def add_account(account_id: str, private_key: str) -> AdditionStatus:
 			return AdditionStatus.ok
 		else:
 			return AdditionStatus.bad
-	except Exception:
+	except Exception as e:
+		await report_exception(e)
 		return AdditionStatus.bug
 
 @bot.on(events.NewMessage(pattern=command_to_regex('list')))
