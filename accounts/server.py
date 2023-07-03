@@ -98,7 +98,7 @@ class ConnectionHandler:
 	async def execute_call(self, call: FuncCall) -> Any:
 		assert isinstance(call, FuncCall), type(call)
 
-		if call.name in ('set_accounts'):
+		if call.name == 'set_accounts':
 			unlock(self.accounts)
 			self.accounts = await call.apply(get_locked_accounts)
 			return get_ids(self.accounts)
@@ -106,7 +106,7 @@ class ConnectionHandler:
 		if call.name in ('create_account', 'is_connected', 'get_coef', 'get_access_keys', 'verify_keys'):
 			return await apply_accountless(call)
 		
-		assert call.name in ('query'), call.name
+		assert call.name in ('query', ), call.name
 		result = await apply_for_accounts(self.accounts, call)
 		return {k.account_id: v for k, v in zip(self.accounts, result)}
 
