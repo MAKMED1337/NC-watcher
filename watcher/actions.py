@@ -157,7 +157,7 @@ class Task(IAction):
 
 		pillar = self.pillar
 		if pillar is not None:
-			cost += modes[info.mode].exercises_cost(len(pillar.exercises or [])) #exercises
+			cost += modes[info.mode].exercises_cost(pillar.num_exercises) #exercises
 
 		return cost
 
