@@ -9,7 +9,7 @@ pillar_iter = 0
 def create_pillar_exercises(exercises_count: int):
 	global pillar_iter
 	pillar_iter += 1
-	return Pillar({'pillar_id': pillar_iter, 'exercises': [0] * exercises_count})
+	return Pillar({'pillar_id': pillar_iter, 'chapter': [{'kind': 'Exercise'}] * exercises_count})
 
 def create_task_info(mode: int, quality: int, status: int, pillar: Pillar | None, resubmits: int, reward: int, ideas: list[dict] | None) -> Info:
 	return Info(mode, 0, 2, quality, status, pillar, resubmits, reward, [], ideas or [])

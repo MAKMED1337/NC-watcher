@@ -78,11 +78,26 @@ class ModMessage:
 		self.msg = data['msg']
 
 @dataclass
+class Chapter:
+	kind: str
+	#add more fields if needed
+
+	def __init__(self, data: dict):
+		self.kind = data['kind']
+
+	def is_exercise(self) -> bool:
+		return self.kind in ('Exercise', 'Problem')
+
+@dataclass
 class Pillar:
 	pillar_id: int
-	exercises: dict[int, Any] | None
+	chapter: list[Chapter]
 	#add more fields if needed
 
 	def __init__(self, data: dict):
 		self.pillar_id = data['pillar_id']
-		self.exercises = data.get('exercises')
+		self.chapter = [Chapter(i) for i in (data['chapter'] or [])]
+	
+	@property
+	def num_exercises(self):
+		return sum([i.is_exercise() for i in self.chapter])
