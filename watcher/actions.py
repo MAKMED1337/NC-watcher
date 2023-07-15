@@ -174,6 +174,9 @@ class Task(IAction):
 
 	def calculate_cost(self) -> int:
 		cost = self.calculate_cost_without_quality()
+		if cost == 0:
+			return 0
+		
 		info = self.info
 		assert 0 <= info.quality <= 2
 		quality_coef = 1 + deviation * (info.quality - 1)

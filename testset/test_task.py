@@ -69,3 +69,9 @@ async def test_AC_resubmits():
 	assert len(diff) == 2
 	assert feq(diff[0].calculate_cost(), 0)
 	assert diff[1] == r
+
+@pytest.mark.asyncio
+async def test_RJ_quality():
+	r = await create_task(18, 3, 3, 10, 2, 740, [])
+	assert not r.has_ended()
+	assert feq(r.calculate_cost(), 0)
