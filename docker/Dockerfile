@@ -10,7 +10,6 @@ WORKDIR /watcher
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY *.session .
 COPY docker/*.env /etc/systemd/system/
 
 COPY docker/*.service /etc/systemd/system/
