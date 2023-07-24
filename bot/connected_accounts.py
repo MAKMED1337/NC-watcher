@@ -1,7 +1,8 @@
-from helper.db_config import Base, db, fetch_all_column
+from helper.db_config import Base, db
 from sqlalchemy import Column, BigInteger, VARCHAR
 from sqlalchemy import select, delete, and_
 from sqlalchemy.dialects.mysql import insert
+from typing import Any
 
 class ConnectedAccounts(Base):
 	__tablename__ = 'ConnectedAccounts'
