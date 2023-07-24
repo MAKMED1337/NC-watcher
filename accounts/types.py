@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any
+from datetime import datetime, timedelta
 
 @dataclass
 class ListTaskInfo:
@@ -42,6 +41,7 @@ class InnerTaskInfo:
 	reviews: list[Review]
 	comment: str | None
 	ideas: list[dict]
+	short_descr: str
 
 	def __init__(self, data: dict):
 		self.pillar_id = data.get('pillar_id')
@@ -50,17 +50,22 @@ class InnerTaskInfo:
 		self.reviews = [Review(r) for r in data['reviews']]
 		self.comment = data['comment']
 		self.ideas = data.get('nightsky_requests', [])
+		self.short_descr = data['short_descr']
 
 @dataclass
 class Status:
-	can_claim_review_in: datetime | None #if banned equals None
-	can_claim_task_in: datetime | None #if banned equals None
+	can_claim_review_in: timedelta | None #if banned equals None
+	can_claim_task_in: timedelta | None #if banned equals None
 	review_penalties: int | None #if banned equals None
 	status: str
 
 	@staticmethod
-	def time_or_none(s: str | None) -> datetime | None :
-		return  datetime.strptime(s, '%H:%M:%S') if s is not None else None
+	def time_or_none(s: str | None) -> timedelta | None :
+		if s is None:
+			return None
+		
+		t = datetime.strptime(s, '%H:%M:%S')
+		return timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
 
 	def __init__(self, data: dict):
 		self.can_claim_review_in = Status.time_or_none(data.get('can_claim_review_in'))

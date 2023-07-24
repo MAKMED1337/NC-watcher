@@ -131,7 +131,7 @@ class Task(IAction):
 
 		task = await account.get_task(info.mode, task_id)
 		if task is None: #could be in bugged tasks, like in SS without ?sunset=... specified
-			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None})
+			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': info.short_descr})
 		
 		info = FullTaskInfo(info, task)
 		obj.info = info
@@ -218,7 +218,7 @@ class Review(IAction):
 		task = await account.get_task(info.mode, task_id)
 		if task is None: #probably old accepted
 			assert info.status == 2
-			task = {'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None}
+			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': 'NULL'})
 		
 		info = FullTaskInfo(info, task)
 		obj.info = info
