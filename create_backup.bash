@@ -1,1 +1,1 @@
-mysqldump watcher --single-transaction --quick --lock-tables=false > backup-$(date +%"F-%T").sql
+mysqldump watcher_dev --single-transaction --quick --lock-tables=false > backup-dev-$(date +%"F-%T").sql
