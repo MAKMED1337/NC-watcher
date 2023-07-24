@@ -79,10 +79,18 @@ class AccountsClient(FuncClient):
 
 
 	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()):
-		return await self._query(V2(path=f'v2/claim_task/{mode}', Q=Q), params)
+		def parse_status(s: str) -> str | int:
+			try:
+				return int(s)
+			except Exception:
+				return s
+		return await self._query(V2(path=f'v2/claim_task/{mode}', Q=Q), params, parse_status)
 
 	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()):
 		return await self._query(V2(path=f'v2/claim_review/{mode}', Q=Q), params)
+	
+	async def postpone(self, mode: int, params=QueryParams()):
+		return await self._query(V2(path=f'v2/postpone_task/{mode}'), params)
 
 	async def get_status(self, mode: int, params=QueryParams()):
 		return await self._query(V2(path=f'v2/taskset/{mode}'), params, typify(Status))
@@ -147,11 +155,14 @@ class SingleAccountsClient:
 	
 
 	
-	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()) -> str:
+	async def claim_task(self, mode: int, Q: str = '', params=QueryParams()) -> str | int:
 		return await self.__client.claim_task(mode, Q, params)
 
 	async def claim_review(self, mode: int, Q: str = '', params=QueryParams()) -> str:
 		return await self.__client.claim_review(mode, Q, params)
+
+	async def postpone(self, mode: int, params=QueryParams()):
+		return await self.__client.postpone(mode, params)
 
 	async def get_status(self, mode: int, params=QueryParams()) -> Status:
 		return await self.__client.get_status(mode, params)
