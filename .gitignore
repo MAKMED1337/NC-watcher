@@ -2,7 +2,9 @@
 *.session
 *.session-journal
 sessionStorage.json
+reports*/
 reports/
 .vscode/
 backup-*.sql
 *.env
+*.ipynb
