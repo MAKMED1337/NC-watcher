@@ -43,12 +43,12 @@ class NearCrowdAccount:
 	def account_id(self):
 		return self._signer.account_id
 
-	def get_nearcrowd_tx(self, actions: list[transactions.Action]):
+	def get_nearcrowd_tx(self, actions: list[transactions.Action]) -> bytes:
 		nonce = 0
 		block_hash = b'\0' * 32
 		return transactions.sign_and_serialize_transaction(contract_id, nonce, actions, block_hash, self._signer)
 
-	def get_tx_args(self, args: dict = {}, name: str='v2'):
+	def get_tx_args(self, args: dict = {}, name: str='v2') -> str:
 		args = str.encode(json.dumps(args))
 		encoded_tx = self.get_nearcrowd_tx([transactions.create_function_call_action(name, args, 0, 0)])
 		return base64.b64encode(encoded_tx).decode('ascii')
@@ -56,7 +56,7 @@ class NearCrowdAccount:
 	def get_tx(self, name: str='v2'):
 		return self.get_tx_args(name=name)
 
-	async def check_account(self):
+	async def check_account(self) -> bool:
 		account = Account(provider, self._signer)
 		await account.start()
 		return await account.view_function(contract_id, 'is_account_whitelisted', {'account_id': self._signer.account_id})
