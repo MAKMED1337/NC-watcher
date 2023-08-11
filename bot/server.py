@@ -8,7 +8,7 @@ from helper.report_exceptions import report_exception
 from watcher.actions import IAction, Status, get_payment_cost, modes, qualities
 from watcher.unpaid_rewards import ActionEnum, UnpaidRewards
 
-from .client import PORT
+from .config import PORT
 from .connected_accounts import ConnectedAccounts
 
 server = Server(PORT, Connection, report_exception)

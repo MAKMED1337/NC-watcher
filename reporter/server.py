@@ -12,7 +12,7 @@ from helper.bot_config import start as start_bot
 from helper.IPC import Connection, Server
 from helper.main_handler import main_handler
 
-from .client import PORT
+from .config import PORT
 
 GROUP_ID = int(os.getenv('GROUP_ID'))
 reports = Path(__file__).parent / 'reports'

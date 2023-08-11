@@ -1,17 +1,14 @@
-PORT = 2001
+import json
+from collections.abc import Callable
+from typing import Any, Self, TypeVar
 
+from pydantic import BaseModel
 
+from helper.IPC import FuncClient
 
-import json  # noqa: E402
-from collections.abc import Callable  # noqa: E402
-from typing import Any, Self, TypeVar  # noqa: E402
-
-from pydantic import BaseModel  # noqa: E402
-
-from helper.IPC import FuncClient  # noqa: E402
-
-from .nearcrowd_account import V2  # noqa: E402
-from .types import InnerTaskInfo, ListTaskInfo, ModMessage, Pillar, Status  # noqa: E402
+from .config import PORT
+from .nearcrowd_account import V2
+from .types import InnerTaskInfo, ListTaskInfo, ModMessage, Pillar, Status
 
 T = TypeVar('T')
 
@@ -163,25 +160,25 @@ class SingleAccountsClient:
 
 
     async def claim_task(self, mode: int, Q: str = '', params: QueryParams = QueryParams()) -> str | int | None:
-        return await self.__client.claim_task(mode, Q, params)
+        return await self.__client.claim_task(mode, Q, params)  # type: ignore[return-value]
 
     async def claim_review(self, mode: int, Q: str = '', params: QueryParams = QueryParams()) -> str | None:
-        return await self.__client.claim_review(mode, Q, params)
+        return await self.__client.claim_review(mode, Q, params)  # type: ignore[return-value]
 
     async def postpone(self, mode: int, params: QueryParams = QueryParams()) -> str | None:
-        return await self.__client.postpone(mode, params)
+        return await self.__client.postpone(mode, params)  # type: ignore[return-value]
 
     async def get_status(self, mode: int, params: QueryParams = QueryParams()) -> Status | None:
-        return await self.__client.get_status(mode, params)
+        return await self.__client.get_status(mode, params)  # type: ignore[return-value]
 
     async def get_task(self, mode: int, task_id: int, params: QueryParams = QueryParams()) -> InnerTaskInfo | None:
-        return await self.__client.get_task(mode, task_id, params)
+        return await self.__client.get_task(mode, task_id, params)  # type: ignore[return-value]
 
     async def get_pillar(self, pillar_id: int, params: QueryParams = QueryParams()) -> Pillar | None:
-        return await self.__client.get_pillar(pillar_id, params)
+        return await self.__client.get_pillar(pillar_id, params)  # type: ignore[return-value]
 
     async def get_task_list(self, mode: int, params: QueryParams = QueryParams()) -> list[ListTaskInfo] | None:
-        return await self.__client.get_task_list(mode, params)
+        return await self.__client.get_task_list(mode, params)  # type: ignore[return-value]
 
     async def get_mod_message(self, params: QueryParams = QueryParams()) -> ModMessage | None:
-        return await self.__client.get_mod_message(params)
+        return await self.__client.get_mod_message(params)  # type: ignore[return-value]

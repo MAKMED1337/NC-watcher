@@ -1,10 +1,8 @@
-PORT = 2000
+import traceback
 
+from helper.IPC import Client
 
-
-import traceback  # noqa: E402
-
-from helper.IPC import Client  # noqa: E402
+from .config import PORT
 
 
 class ReporterClient(Client):

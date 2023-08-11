@@ -10,7 +10,7 @@ from helper.provider_config import provider
 from helper.report_exceptions import report_exception
 
 from .accounts_db import Accounts
-from .client import PORT
+from .config import PORT
 from .functions import *  # noqa: F403
 from .locks import get_lock
 from .nearcrowd_account import NearCrowdAccount
