@@ -1,4 +1,5 @@
-from accounts.types import Pillar, Chapter
+from accounts.types import Chapter, Pillar
+
 
 def test_exercises_kind():
     assert Chapter({'kind': 'Exercise'}).is_exercise()

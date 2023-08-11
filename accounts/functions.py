@@ -1,42 +1,43 @@
-from .nearcrowd_account import NearCrowdAccount, V2
-from .accounts_db import Accounts
 from bot.client import BotClient
 from near.signer import KeyPair
 
+from .accounts_db import Accounts
+from .nearcrowd_account import V2, NearCrowdAccount
+
+
 async def query(account: NearCrowdAccount, q: V2) -> str:
-	return await account.query(q)
+    return await account.query(q)
 
 async def create_account(account_id: str, private_key: str) -> bool:
-	try:
-		account = NearCrowdAccount(account_id, private_key)
-		if not await account.check_account():
-			return False
-		
-		await Accounts.add_account(account_id, private_key)
-		return True
-	except Exception:
-		return False
+    try:
+        account = NearCrowdAccount(account_id, private_key)
+        if not await account.check_account():
+            return False
+        await Accounts.add_account(account_id, private_key)
+    except Exception:  # noqa: BLE001
+        return False
+    return True
 
 async def is_connected(account_id: str) -> bool:
-	return await Accounts.is_connected(account_id)
+    return await Accounts.is_connected(account_id)
 
 async def get_coef() -> float:
-	return await NearCrowdAccount.get_coef()
+    return await NearCrowdAccount.get_coef()
 
 async def get_access_keys(account_id: str) -> list[str]:
-	return await NearCrowdAccount.get_access_keys(account_id)
+    return await NearCrowdAccount.get_access_keys(account_id)
 
 #returns removed keys
 async def verify_keys(account_id: str) -> list[str]:
-	public_keys = await get_access_keys(account_id)
-	keys = await Accounts.get_keys(account_id)
-	broken_keys = [key for key in keys if 'ed25519:' + KeyPair(key).encoded_public_key() not in public_keys]
-	
-	for key in broken_keys:
-		await _delete_key(account_id, key)
-	return broken_keys
+    public_keys = await get_access_keys(account_id)
+    keys = await Accounts.get_keys(account_id)
+    broken_keys = [key for key in keys if 'ed25519:' + KeyPair(key).encoded_public_key not in public_keys]
 
-async def _delete_key(account_id: str, private_key: str):
-	await Accounts.delete_key(account_id, private_key)
-	async with BotClient() as bot:
-		await bot.remove_key(account_id, private_key, None)
+    for key in broken_keys:
+        await _delete_key(account_id, key)
+    return broken_keys
+
+async def _delete_key(account_id: str, private_key: str) -> None:
+    await Accounts.delete_key(account_id, private_key)
+    async with BotClient() as bot:
+        await bot.remove_key(account_id, private_key, None)

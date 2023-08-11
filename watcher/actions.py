@@ -1,264 +1,291 @@
-from .unpaid_rewards import UnpaidRewards, ActionEnum
-from accounts.client import SingleAccountsClient, ListTaskInfo, InnerTaskInfo, Pillar
-from dataclasses import dataclass, fields
-from .last_task_state import LastTaskState
-from typing import Any
 import copy
+from dataclasses import dataclass, fields
+from typing import Any
+
+from accounts.client import InnerTaskInfo, ListTaskInfo, Pillar, SingleAccountsClient
+
+from .last_task_state import LastTaskState
+from .unpaid_rewards import ActionEnum, UnpaidRewards
 
 qualities = ['Low Quality', 'Good', 'Outstanding', '', 'Has Mistakes']
 verdicts = ['Reviewed, Rejected', 'Reviewed, Accepted', 'Performed']
 status_names = ['RJ', 'AC']
 statuses = ['Being Fixed', 'In Review', 'Accepted', 'Rejected', 'Abandoned', 'Postponed']
 
+
+class Quality:
+    low = 0
+    good = 1
+    out = 2
+    _ = 3
+    mistake = 4
+
+
+class Verdict:
+    reject = 0
+    accept = 1
+    perform = 2
+
+
+class Status:
+    fix = 0
+    review = 1
+    accept = 2
+    reject = 3
+    abandon = 4
+    postpone = 5
+
 deviation = 0.25
 power = 1e3
 
 @dataclass
 class ModeInfo:
-	name: str
-	resubmits: int
-	max_exercises: int
+    name: str
+    resubmits: int
+    max_exercises: int
 
-	def percent(self, resubmits: int) -> int:
-		assert 0 <= resubmits <= self.resubmits
-		assert 40 % self.resubmits == 0
-		return resubmits * 40 // self.resubmits
+    def percent(self, resubmits: int) -> int:
+        assert 0 <= resubmits <= self.resubmits
+        assert 40 % self.resubmits == 0
+        return resubmits * 40 // self.resubmits
 
-	def exercises_cost(self, count: int) -> int:
-		count = min(count, self.max_exercises)
-		prices = [(5, 0), (10, 0.3 * power), (20, 0.1 * power), (1000000, 0)]
-		prev, result = 0, 0
-		for cnt, cost in prices:
-			result += max(min(cnt, count) - prev, 0) * cost
-			prev = cnt
-		return result
+    def exercises_cost(self, count: int) -> int:
+        count = min(count, self.max_exercises)
+        prices = [(5, 0), (10, 0.3 * power), (20, 0.1 * power), (1000000, 0)]
+        prev, result = 0, 0
+        for cnt, cost in prices:
+            result += max(min(cnt, count) - prev, 0) * cost
+            prev = cnt
+        return result
 
 modes: dict[int, ModeInfo] = {
-	18: ModeInfo('Sunshine / Sunset', 4, 0), #no additional task payment
-	750: ModeInfo('Acadé', 10, 20)
+    18: ModeInfo('Sunshine / Sunset', 4, 0), #no additional task payment
+    750: ModeInfo('Acadé', 10, 20),
 }
 
 @dataclass
 class FullTaskInfo(ListTaskInfo, InnerTaskInfo):
-	def __init__(self, list_info: ListTaskInfo, task_info: InnerTaskInfo):
-		for field in fields(list_info):
-			setattr(self, field.name, getattr(list_info, field.name))
-		for field in fields(task_info):
-			setattr(self, field.name, getattr(task_info, field.name))
-		self.resubmits += int(self.status == 3) #resubmits only updates after `work on fixing`, so we need to fake it
-	
-	@property
-	def debug(self) -> dict[str, Any]:
-		result = {}
-		for field in fields(ListTaskInfo):
-			result[field.name] = getattr(self, field.name)
-		result['resubmits'] = self.resubmits
-		result['reward'] = self.reward
-		return result
-		
+    def __init__(self, list_info: ListTaskInfo, task_info: InnerTaskInfo) -> None:
+        for field in fields(list_info):
+            setattr(self, field.name, getattr(list_info, field.name))
+        for field in fields(task_info):
+            setattr(self, field.name, getattr(task_info, field.name))
+        self.resubmits += int(self.status == Status.reject) #resubmits only updates after `work on fixing`, so we need to fake it
+
+    @property
+    def debug(self) -> dict[str, Any]:
+        result = {}
+        for field in fields(ListTaskInfo):
+            result[field.name] = getattr(self, field.name)
+        result['resubmits'] = self.resubmits
+        result['reward'] = self.reward
+        return result
+
 
 def feq(a: float, b: float) -> bool:
-	return abs(a - b) <= 3 #because of NC's internal rounds, it's probably will not hurt
+    insignificant_error = 3
+    return abs(a - b) <= insignificant_error #because of NC's internal rounds, it's probably will not hurt
 
 class IAction:
-	info: FullTaskInfo
+    info: FullTaskInfo
 
-	@property
-	def task_id(self) -> int:
-		return self.info.task_id
+    @property
+    def task_id(self) -> int:
+        return self.info.task_id
 
-	@staticmethod
-	def is_proto(info: ListTaskInfo) -> bool:
-		raise NotImplementedError
-	
-	@staticmethod
-	def get_enum() -> ActionEnum:
-		raise NotImplementedError
+    @staticmethod
+    def is_proto(info: ListTaskInfo) -> bool:
+        raise NotImplementedError
 
-	def has_ended(self) -> bool:
-		raise NotImplementedError
-	
-	def diff(self, state: LastTaskState) -> list['IAction']:
-		assert not state.ended
-		raise NotImplementedError
+    @staticmethod
+    def get_enum() -> ActionEnum:
+        raise NotImplementedError
 
-	@staticmethod
-	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'IAction':
-		raise NotImplementedError
+    def has_ended(self) -> bool:
+        raise NotImplementedError
 
-	def is_same(self, reward: UnpaidRewards) -> bool:
-		raise NotImplementedError
-	
-	def calculate_cost(self) -> int:
-		raise NotImplementedError
+    def diff(self, state: LastTaskState) -> list['IAction']:
+        assert not state.ended
+        raise NotImplementedError
+
+    @staticmethod
+    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'IAction':
+        raise NotImplementedError
+
+    def is_same(self, reward: UnpaidRewards) -> bool:
+        raise NotImplementedError
+
+    def calculate_cost(self) -> int:
+        raise NotImplementedError
 
 class Task(IAction):
-	pillar: Pillar
+    pillar: Pillar
 
-	@staticmethod
-	def is_proto(info: ListTaskInfo):
-		return info.my_verdict == 2
+    @staticmethod
+    def is_proto(info: ListTaskInfo) -> bool:
+        return info.my_verdict == Verdict.perform
 
-	@staticmethod
-	def get_enum() -> ActionEnum:
-		return ActionEnum.task
+    @staticmethod
+    def get_enum() -> ActionEnum:
+        return ActionEnum.task
 
-	def has_ended(self) -> bool:
-		info = self.info
-		return info.status in (2, 4)
+    def has_ended(self) -> bool:
+        info = self.info
+        return info.status in (Status.accept, Status.abandon)
 
-	def diff(self, state: LastTaskState) -> list['Task']:
-		assert not state.ended
-		resubmits = state.resubmits or 0
+    def diff(self, state: LastTaskState) -> list['Task']:
+        assert not state.ended
+        resubmits = state.resubmits or 0
 
-		res = []
-		for resubmit in range(resubmits + 1, self.info.resubmits + 1):
-			t = copy.deepcopy(self)
-			t.info.resubmits = resubmit
-			t.info.status = 3
-			res.append(t)
-		
-		if self.info.status == 2:
-			res.append(self)
-		
-		return res
+        res = []
+        for resubmit in range(resubmits + 1, self.info.resubmits + 1):
+            t = copy.deepcopy(self)
+            t.info.resubmits = resubmit
+            t.info.status = Status.reject
+            res.append(t)
 
-	@staticmethod
-	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Task':
-		obj = Task()
+        if self.info.status == Status.accept:
+            res.append(self)
 
-		task_id = info.task_id
+        return res
 
-		task = await account.get_task(info.mode, task_id)
-		if task is None: #could be in bugged tasks, like in SS without ?sunset=... specified
-			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': info.short_descr})
-		
-		info = FullTaskInfo(info, task)
-		obj.info = info
+    @staticmethod
+    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Task':
+        obj = Task()
 
-		if info.pillar_id is not None:
-			obj.pillar = await account.get_pillar(info.pillar_id)
-		else:
-			obj.pillar = None
-		
-		return obj
+        task_id = info.task_id
 
-	def is_same(self, reward: UnpaidRewards) -> bool:
-		cost = self.calculate_cost() * reward.coef
-		if feq(cost, reward.cost):
-			return True
-		
-		info = self.info
-		#sometimes rewards are higher than they needed to be (LQ -> GQ, GQ -> OS)
-		if info.quality == 2:
-			return False
+        task = await account.get_task(info.mode, task_id)
+        if task is None: #could be in bugged tasks, like in SS without ?sunset=... specified
+            task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': info.short_descr})
 
-		cost = self.calculate_cost_without_quality() * reward.coef
-		return feq((1 + deviation * info.quality) * cost, reward.cost) #1 quality up
+        info = FullTaskInfo(info, task)
+        obj.info = info
 
-	def calculate_cost_without_quality(self) -> float:
-		info = self.info
-		if info.status in (3, 4):
-			return 0
+        if info.pillar_id is not None:
+            obj.pillar = await account.get_pillar(info.pillar_id)
+        else:
+            obj.pillar = None
 
-		resubmits_coef = 1 - modes[info.mode].percent(info.resubmits) / 100
-		cost = info.reward * resubmits_coef #base + resubmit
+        return obj
 
-		cost += 0.4 * power * len(info.ideas) #ideas
+    def is_same(self, reward: UnpaidRewards) -> bool:
+        cost = self.calculate_cost() * reward.coef
+        if feq(cost, reward.cost):
+            return True
 
-		pillar = self.pillar
-		if pillar is not None:
-			cost += modes[info.mode].exercises_cost(pillar.num_exercises) #exercises
+        info = self.info
+        #sometimes rewards are higher than they needed to be (LQ -> GQ, GQ -> OS)
+        if info.quality == Quality.out:
+            return False
 
-		return cost
+        cost = self.calculate_cost_without_quality() * reward.coef
+        return feq((1 + deviation * info.quality) * cost, reward.cost) #1 quality up
 
-	def calculate_cost(self) -> int:
-		cost = self.calculate_cost_without_quality()
-		if cost == 0:
-			return 0
-		
-		info = self.info
-		assert 0 <= info.quality <= 2
-		quality_coef = 1 + deviation * (info.quality - 1)
-		cost *= quality_coef #quality(LQ/OS)
-		return int(cost)
+    def calculate_cost_without_quality(self) -> float:
+        info = self.info
+        if info.status in (Status.reject, Status.abandon):
+            return 0
+
+        resubmits_coef = 1 - modes[info.mode].percent(info.resubmits) / 100
+        cost = info.reward * resubmits_coef #base + resubmit
+
+        cost += 0.4 * power * len(info.ideas) #ideas
+
+        pillar = self.pillar
+        if pillar is not None:
+            cost += modes[info.mode].exercises_cost(pillar.num_exercises) #exercises
+
+        return cost
+
+    def calculate_cost(self) -> int:
+        cost = self.calculate_cost_without_quality()
+        if cost == 0:
+            return 0
+
+        info = self.info
+        assert Quality.low <= info.quality <= Quality.out
+        quality_coef = 1 + deviation * (info.quality - 1)
+        cost *= quality_coef #quality(LQ/OS)
+        return int(cost)
 
 class Review(IAction):
-	@staticmethod
-	def is_proto(info: ListTaskInfo):
-		return info.my_verdict != 2
+    @staticmethod
+    def is_proto(info: ListTaskInfo) -> bool:
+        return info.my_verdict != Verdict.perform
 
-	@staticmethod
-	def get_enum() -> ActionEnum:
-		return ActionEnum.review
-	
-	def get_my_review(self) -> dict | None:
-		return next((review for review in self.info.reviews if review.mine), None)
+    @staticmethod
+    def get_enum() -> ActionEnum:
+        return ActionEnum.review
 
-	def was_rejected(self) -> bool:
-		review = self.get_my_review()
-		return review.before_resubmit if review is not None else False
-	
-	def has_ended(self) -> bool:
-		return self.info.status != 1 or self.was_rejected()
-	
-	def diff(self, state: LastTaskState) -> list['Review']:
-		assert not state.ended
-		r = copy.deepcopy(self)
-		if self.was_rejected():
-			r.info.status = 3
-		return [r] if self.has_ended() else []
+    def get_my_review(self) -> dict | None:
+        return next((review for review in self.info.reviews if review.mine), None)
 
-	@staticmethod
-	async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
-		obj = Review()
+    def was_rejected(self) -> bool:
+        review = self.get_my_review()
+        return review.before_resubmit if review is not None else False
 
-		task_id = info.task_id
+    def has_ended(self) -> bool:
+        return self.info.status != Status.review or self.was_rejected()
 
-		task = await account.get_task(info.mode, task_id)
-		if task is None: #probably old accepted
-			assert info.status == 2
-			task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': 'NULL'})
-		
-		info = FullTaskInfo(info, task)
-		obj.info = info
+    def diff(self, state: LastTaskState) -> list['Review']:
+        assert not state.ended
+        r = copy.deepcopy(self)
+        if self.was_rejected():
+            r.info.status = Status.reject
+        return [r] if self.has_ended() else []
 
-		return obj
+    @staticmethod
+    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
+        obj = Review()
 
-	def is_same(self, reward: UnpaidRewards) -> bool:
-		return feq(self.calculate_cost() * reward.coef, reward.cost)
+        task_id = info.task_id
 
-	def calculate_cost(self) -> int:
-		info = self.info
-		for r in info.reviews:
-			assert 0 <= r.before_resubmit <= 1
+        task = await account.get_task(info.mode, task_id)
+        if task is None: #probably old accepted
+            assert info.status == Status.accept
+            task = InnerTaskInfo({'resubmits': 0, 'reward': 0, 'reviews': [], 'comment': None, 'short_descr': 'NULL'})
 
-		my_verdict = info.my_verdict
-		status = info.status
-		review = self.get_my_review()
-		
-		correct_verdict = review.before_resubmit == 0 and status == 2
-		return int(info.reward * int(my_verdict == correct_verdict))
+        info = FullTaskInfo(info, task)
+        obj.info = info
+
+        return obj
+
+    def is_same(self, reward: UnpaidRewards) -> bool:
+        return feq(self.calculate_cost() * reward.coef, reward.cost)
+
+    def calculate_cost(self) -> int:
+        info = self.info
+        for r in info.reviews:
+            assert 0 <= r.before_resubmit <= 1
+
+        my_verdict = info.my_verdict
+        status = info.status
+        review = self.get_my_review()
+
+        correct_verdict = review.before_resubmit == 0 and status == Status.accept
+        return int(info.reward * int(my_verdict == correct_verdict))
 
 action_prototypes: list[IAction] = [Task(), Review()]
 
 def get_proto_by_enum(db_type: ActionEnum) -> IAction:
-	for i in action_prototypes:
-		if i.get_enum() == db_type:
-			return i
-	assert False
+    for i in action_prototypes:
+        if i.get_enum() == db_type:
+            return i
+    raise AssertionError
 
 async def load_action_by_info(account: SingleAccountsClient, info: ListTaskInfo) -> IAction:
-	for i in action_prototypes:
-		if i.is_proto(info):
-			return await i.load(account, info)
-	assert False
+    for i in action_prototypes:
+        if i.is_proto(info):
+            return await i.load(account, info)
+    raise AssertionError
 
 def get_payment_cost(reward: UnpaidRewards) -> int:
-	if reward.action is ActionEnum.task:
-		return reward.cost
-	
-	assert 0 <= reward.adjustment <= 2
-	if reward.adjustment == 0:
-		assert False, 'IDK, probably -25%'
-	return (1 + deviation * (reward.adjustment - 1)) * reward.cost
+    if reward.action is ActionEnum.task:
+        return reward.cost
+
+    assert 0 <= reward.adjustment <= 2  # noqa: PLR2004
+    if reward.adjustment == 0:
+        msg = 'IDK, probably -25%'
+        raise AssertionError(msg)
+    return (1 + deviation * (reward.adjustment - 1)) * reward.cost

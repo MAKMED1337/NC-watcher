@@ -1,6 +1,7 @@
-from pathlib import Path
-from bot.client import BotClient
 from datetime import timedelta
+from pathlib import Path
+
+from bot.client import BotClient
 
 directory = Path(__file__).parent.resolve()
 block_logger_interval = timedelta(minutes=10)
