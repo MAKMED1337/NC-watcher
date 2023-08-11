@@ -1,8 +1,7 @@
 import asyncio
 import base64
 import json
-from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 import aiohttp
 from pydantic import BaseModel
@@ -17,13 +16,8 @@ contract_id = 'app.nearcrowd.near'
 api = 'https://nearcrowd.com/'
 
 
-class PostType(Enum):
-    data = 'body'
-    json = 'json'
-
-
 class PostData(BaseModel):
-    type: PostType
+    type: Literal['body', 'json']
     data: Any
 
 
@@ -96,7 +90,7 @@ class NearCrowdAccount:
 
                 return text
 
-    async def query(self, q: V2) -> str:
+    async def query(self, q: V2) -> str | None:
         for _ in range(q.retry_count):
             try:
                 return await self._query_one_try(q)
@@ -105,9 +99,8 @@ class NearCrowdAccount:
         return None
 
 
-
     @staticmethod
-    async def fetch_accountless(path: str, retries: int=10) -> str:
+    async def fetch_accountless(path: str, retries: int=10) -> str | None:
         for _ in range(retries):
             try:
                 async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session, session.get(f'{api}{path}') as response:
@@ -118,5 +111,6 @@ class NearCrowdAccount:
         return None
 
     @staticmethod
-    async def get_coef(retries: int=10) -> float:
-        return float(await NearCrowdAccount.fetch_accountless('get_coef', retries))
+    async def get_coef(retries: int=10) -> float | None:
+        coef = await NearCrowdAccount.fetch_accountless('get_coef', retries)
+        return float(coef) if coef is not None else None

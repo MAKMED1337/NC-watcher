@@ -1,8 +1,12 @@
 class Kuhn:
+    n: int
+    m: int
+    G: list[list[int]]
+
     def __init__(self, verticies: int, left_part: int) -> None:
         self.n = verticies
         self.m = left_part
-        self.G = [[] for i in range(self.n)]
+        self.G = [[] for _ in range(self.n)]
 
     def add_edge(self, u: int, v: int) -> None:
         self.G[u].append(v)

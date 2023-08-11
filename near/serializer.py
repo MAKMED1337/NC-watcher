@@ -16,7 +16,7 @@ class BinarySerializer:
         assert value == 0, 'Value %d has more than %d bytes' % (orig_value, n_bytes)    # TODO: Need to replace to Exception
 
     def serialize_field(self, value: Any, field_type: str | list | dict | type) -> None:
-        match field_type:
+        match type(field_type):
             case builtins.str:
                 if field_type[0] == 'u':
                     self.serialize_num(value, int(field_type[1:]) // 8)

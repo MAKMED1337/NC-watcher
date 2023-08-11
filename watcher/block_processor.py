@@ -16,13 +16,13 @@ from .config import block_logger_interval
 from .processed_blocks import ProcessedBlocks
 from .unpaid_rewards import ActionEnum, UnpaidRewards
 
-coef = None
+coef: float
 
 def set_coef(c: float) -> None:
     global coef
     coef = c
 
-async def add_reward_if_connected(tx_id: str, account_id: str, cost: float, action: ActionEnum, adjustment: int | None = None) -> None:
+async def add_reward_if_connected(tx_id: str, account_id: str, cost: int, action: ActionEnum, adjustment: int | None = None) -> None:
     if await ConnectedAccounts.is_connected(account_id):
         await UnpaidRewards.add(tx_id, account_id, cost, coef, action, adjustment)
 

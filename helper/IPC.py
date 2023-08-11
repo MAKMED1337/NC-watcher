@@ -1,20 +1,24 @@
 import asyncio
 import pickle
 from asyncio.mixins import _LoopBoundMixin
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Generic, Self, TypeVar
 
+T = TypeVar('T')
 
 class Connection:
+    _reader: asyncio.StreamReader | None
+    _writer: asyncio.StreamWriter | None
+
     def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         self._reader = reader
         self._writer = writer
 
     @property
     def _connected(self) -> bool:
-        return self._reader is not None
+        return self._reader is not None and self._writer is not None
 
     @property
     def connected(self) -> bool:
@@ -51,6 +55,8 @@ class Connection:
 
     #At most waits 2 * timeout, timeout in seconds
     async def read(self, on_exception: Any = Exception, *, timeout: float | None = None) -> Any:
+        assert self._connected
+
         try:
             length = int.from_bytes(await asyncio.wait_for(self._reader.readexactly(4), timeout), 'big')
             return pickle.loads(await asyncio.wait_for(self._reader.readexactly(length), timeout))
@@ -67,7 +73,6 @@ class Connection:
 
 class Client(Connection):
     def __init__(self, port: int) -> None:
-        super().__init__(None, None)
         self._port = port
 
     async def connect(self) -> bool:
@@ -86,15 +91,15 @@ class Client(Connection):
 
 class FuncCall:
     name: str
-    args: list[Any]
+    args: tuple[Any, ...]
     kwargs: dict[str, Any]
 
-    def __init__(self, name: str, *args: list[Any], **kwargs: dict[str, Any]):
+    def __init__(self, name: str, *args: Any, **kwargs: Any):
         self.name = name
         self.args = args
         self.kwargs = kwargs
 
-    async def apply(self, f: Callable, *args: list[Any], **kwargs: dict[str, Any]) -> Any:
+    async def apply(self, f: Callable, *args: Any, **kwargs: Any) -> Any:
         return await f(*args, *self.args, **kwargs, **self.kwargs)
 
 
@@ -106,7 +111,7 @@ class Packet:
 
 class FuncConnection(_LoopBoundMixin):
     last_id: int = 0
-    _read_lock: bool
+    _read_lock: asyncio.Lock
     _waiters: dict[int, asyncio.Future]
     _ready: dict[int, Any]
 
@@ -174,7 +179,7 @@ class FuncConnection(_LoopBoundMixin):
         id = await self._send(func)
         return await self._read(on_exception, id)
 
-    async def call(self, on_exception: Any, func: str, *args: list[Any], **kwargs: dict[str, Any]) -> Any:
+    async def call(self, on_exception: Any, func: str, *args: Any, **kwargs: Any) -> Any:
         return await self.call_func(FuncCall(func, *args, **kwargs), on_exception)
 
 
@@ -186,9 +191,9 @@ class Response(Packet):
         self._conn = conn
 
     async def respond(self, data: Any) -> None:
-        assert self.id is not None, 'alerady responded'
+        assert self.id != -1, 'alerady responded'
         await self._conn.send(Packet(self.id, data))
-        self.id = None
+        self.id = -1
 
 
 class FuncClient(Client, FuncConnection):
@@ -197,9 +202,18 @@ class FuncClient(Client, FuncConnection):
         FuncConnection.__init__(self, self)
 
 
-class Server:
+class Server(Generic[T]):
+    _connections: set[T]
+    _connection_handlers: set[Callable[[T], Awaitable]]
+    _server: asyncio.Server | None
+    _exception: Exception | None
+
     # exception_handler accepts async callback with exception, by default stops server
-    def __init__(self, port: int, connection_class: type = Connection, exception_handler: Callable[[Exception], Any] | None = None) -> None:
+    def __init__(
+            self,
+            port: int,
+            connection_class: Callable[[asyncio.StreamReader, asyncio.StreamWriter], T] = Connection,
+            exception_handler: Callable[[Exception], Any] | None = None):
         self._port = port
         self._connection_class = connection_class
         self._exception_handler = exception_handler
@@ -214,7 +228,7 @@ class Server:
         new_connection = self._connection_class(reader, writer)
 
         try:
-            self.connections.add(new_connection)
+            self._connections.add(new_connection)
             for handle in self._connection_handlers:
                 await handle(new_connection)
         except Exception as exc:  # noqa: BLE001
@@ -225,27 +239,25 @@ class Server:
                 await self._exception_handler(exc)
         finally:
             await new_connection.close()
-            self.connections.remove(new_connection)
+            self._connections.remove(new_connection)
 
-    def on_connect(self, coro: Coroutine) -> None:
+    def on_connect(self, coro: Callable[[T], Awaitable]) -> Callable[[T], Awaitable]:
         if not asyncio.iscoroutinefunction(coro):
-            msg = '@on_connect must register a coroutine function'
-            raise TypeError(msg)
+            raise TypeError('@on_connect must register a coroutine function')
 
         if coro.__code__.co_argcount not in [1, 2]:
-            msg = '@on_connect coroutines must allow for a Link argument'
-            raise TypeError(msg)
+            raise TypeError('@on_connect coroutines must allow for a Link argument')
 
         self._connection_handlers.add(coro)
         return coro
 
-    def add_connection_handler(self, coro: Coroutine) -> None:
+    def add_connection_handler(self, coro: Callable[[T], Awaitable]) -> None:
         self.on_connect(coro)
 
-    def remove_connection_handler(self, coro: Coroutine) -> None:
+    def remove_connection_handler(self, coro: Callable[[T], Awaitable]) -> None:
         self._connection_handlers.discard(coro)
 
-    def is_closed(self) -> None:
+    def is_closed(self) -> bool:
         return self._closed
 
     @property

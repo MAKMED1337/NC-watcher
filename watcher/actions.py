@@ -1,8 +1,9 @@
 import copy
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, Self
 
-from accounts.client import InnerTaskInfo, ListTaskInfo, Pillar, SingleAccountsClient
+from accounts.client import SingleAccountsClient
+from accounts.types import InnerTaskInfo, ListTaskInfo, PillarInfo, ReviewInfo
 
 from .last_task_state import LastTaskState
 from .unpaid_rewards import ActionEnum, UnpaidRewards
@@ -35,8 +36,13 @@ class Status:
     abandon = 4
     postpone = 5
 
+
 deviation = 0.25
 power = 1e3
+
+def mnear(x: float) -> int:
+    return int(x * power)
+
 
 @dataclass
 class ModeInfo:
@@ -51,7 +57,7 @@ class ModeInfo:
 
     def exercises_cost(self, count: int) -> int:
         count = min(count, self.max_exercises)
-        prices = [(5, 0), (10, 0.3 * power), (20, 0.1 * power), (1000000, 0)]
+        prices = [(5, 0), (10, mnear(0.3)), (20, mnear(0.1)), (1000000, 0)]
         prev, result = 0, 0
         for cnt, cost in prices:
             result += max(min(cnt, count) - prev, 0) * cost
@@ -104,12 +110,12 @@ class IAction:
     def has_ended(self) -> bool:
         raise NotImplementedError
 
-    def diff(self, state: LastTaskState) -> list['IAction']:
+    def diff(self, state: LastTaskState) -> list[Self]:
         assert not state.ended
         raise NotImplementedError
 
-    @staticmethod
-    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'IAction':
+    @classmethod
+    async def load(cls, account: SingleAccountsClient, info: ListTaskInfo) -> Self:
         raise NotImplementedError
 
     def is_same(self, reward: UnpaidRewards) -> bool:
@@ -119,7 +125,7 @@ class IAction:
         raise NotImplementedError
 
 class Task(IAction):
-    pillar: Pillar
+    pillar: PillarInfo | None
 
     @staticmethod
     def is_proto(info: ListTaskInfo) -> bool:
@@ -149,8 +155,8 @@ class Task(IAction):
 
         return res
 
-    @staticmethod
-    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Task':
+    @classmethod
+    async def load(cls, account: SingleAccountsClient, info: ListTaskInfo) -> 'Task':
         obj = Task()
 
         task_id = info.task_id
@@ -218,7 +224,7 @@ class Review(IAction):
     def get_enum() -> ActionEnum:
         return ActionEnum.review
 
-    def get_my_review(self) -> dict | None:
+    def get_my_review(self) -> ReviewInfo | None:
         return next((review for review in self.info.reviews if review.mine), None)
 
     def was_rejected(self) -> bool:
@@ -235,8 +241,8 @@ class Review(IAction):
             r.info.status = Status.reject
         return [r] if self.has_ended() else []
 
-    @staticmethod
-    async def load(account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
+    @classmethod
+    async def load(cls, account: SingleAccountsClient, info: ListTaskInfo) -> 'Review':
         obj = Review()
 
         task_id = info.task_id
@@ -256,12 +262,12 @@ class Review(IAction):
 
     def calculate_cost(self) -> int:
         info = self.info
-        for r in info.reviews:
-            assert 0 <= r.before_resubmit <= 1
+        assert all(0 <= r.before_resubmit <= 1 for r in info.reviews)
 
         my_verdict = info.my_verdict
         status = info.status
         review = self.get_my_review()
+        assert review
 
         correct_verdict = review.before_resubmit == 0 and status == Status.accept
         return int(info.reward * int(my_verdict == correct_verdict))
@@ -284,8 +290,11 @@ def get_payment_cost(reward: UnpaidRewards) -> int:
     if reward.action is ActionEnum.task:
         return reward.cost
 
-    assert 0 <= reward.adjustment <= 2  # noqa: PLR2004
-    if reward.adjustment == 0:
+    assert reward.adjustment is not None
+    adjustment: int = reward.adjustment
+
+    assert 0 <= adjustment <= 2  # noqa: PLR2004
+    if adjustment == 0:
         msg = 'IDK, probably -25%'
         raise AssertionError(msg)
-    return (1 + deviation * (reward.adjustment - 1)) * reward.cost
+    return int((1 + deviation * (adjustment - 1)) * reward.cost)

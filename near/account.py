@@ -1,5 +1,6 @@
 import itertools
 import json
+from typing import Any
 
 import base58
 
@@ -143,7 +144,7 @@ class Account:
         ] + ([transactions.create_full_access_key_action(public_key)] if public_key is not None else [])
         return await self._sign_and_submit_tx(contract_id, actions)
 
-    async def view_function(self, contract_id: str, method_name: str, args: dict | None = None) -> dict:
+    async def view_function(self, contract_id: str, method_name: str, args: dict | None = None) -> Any:
         result = await self._provider.view_call(contract_id, method_name, json.dumps(args).encode('utf8'))
         if 'error' in result:
             raise ViewFunctionError(result['error'])

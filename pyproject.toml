@@ -1,7 +1,7 @@
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 select = ["ALL"]
-ignore = ["D", "INP001", "T20", "PLW0603", "FBT", "ANN101", "EXE", "ANN401", "PTH123", "TD", "FIX", "S301", "S101"]
+ignore = ["D", "INP001", "T20", "PLW0603", "FBT", "ANN101", "ANN102", "EXE", "ANN401", "PTH123", "TD", "FIX", "S301", "S101", "EM101", "TRY003", "RSE102"]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
@@ -33,3 +33,7 @@ builtins-ignorelist = ["id", "type"]
 [tool.ruff.per-file-ignores]
 "tests/**/*.py" = ["S101", "ANN201", "PLR2004"]
 "accounts/client.py" = ["N803", "B008"]
+
+[tool.mypy]
+allow_redefinition = true
+plugins = ["sqlalchemy.ext.mypy.plugin"]

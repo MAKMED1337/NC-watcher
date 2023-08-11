@@ -1,7 +1,8 @@
 import enum
 
-from sqlalchemy import FLOAT, INTEGER, VARCHAR, Column, Enum, and_, delete, select
+from sqlalchemy import VARCHAR, and_, delete, select
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.orm import Mapped, mapped_column
 
 from helper.db_config import Base, db
 
@@ -10,14 +11,16 @@ class ActionEnum(enum.Enum):
     task = 0
     review = 1
 
+
 class UnpaidRewards(Base):
     __tablename__ = 'UnpaidRewards'
-    tx_id = Column(VARCHAR(64), primary_key=True)
-    account_id = Column(VARCHAR(64), primary_key=True)
-    cost = Column(INTEGER, nullable=False)
-    coef = Column(FLOAT, nullable=False)
-    action = Column(Enum(ActionEnum), nullable=False)
-    adjustment = Column(INTEGER) #OR verdict for task
+
+    tx_id: Mapped[str] = mapped_column(VARCHAR(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(VARCHAR(64), primary_key=True)
+    cost: Mapped[int]
+    coef: Mapped[float]
+    action: Mapped[ActionEnum]
+    adjustment: Mapped[int | None]  # verdict only for task
 
     @staticmethod
     async def add(tx_id: str, account_id: str, cost: int, coef: float, action: ActionEnum, adjustment: int | None = None) -> None:
@@ -26,7 +29,9 @@ class UnpaidRewards(Base):
 
     @staticmethod
     async def get(account_id: str, action: ActionEnum) -> list['UnpaidRewards']:
-        return await db.fetch_all(select(UnpaidRewards).where(and_(UnpaidRewards.account_id == account_id, UnpaidRewards.action == action)))
+        return await db.fetch_all(
+            select(UnpaidRewards).where(and_(UnpaidRewards.account_id == account_id, UnpaidRewards.action == action)),
+        )  # type: ignore[return-value]
 
     @staticmethod
     async def remove(account_id: str, action: ActionEnum) -> None:
@@ -42,4 +47,4 @@ class UnpaidRewards(Base):
 
     @staticmethod
     async def get_unpaid_action_types() -> list[tuple[str, ActionEnum]]:
-        return await db.fetch_all(select(UnpaidRewards.account_id, UnpaidRewards.action).distinct())
+        return await db.fetch_all(select(UnpaidRewards.account_id, UnpaidRewards.action).distinct())  # type: ignore[return-value]

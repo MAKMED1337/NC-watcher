@@ -24,7 +24,7 @@ async def wait_pool(coros: list, *, use_semaphore: bool = True) -> list[Any]:
     if len(coros) == 0:
         return []
 
-    def create_task(coro: Coroutine) -> None:
+    def create_task(coro: Coroutine) -> asyncio.Task:
         return asyncio.create_task(sem_coro(coro) if use_semaphore else coro)
 
     done, pending = await asyncio.wait([create_task(i) for i in coros], return_when=asyncio.FIRST_EXCEPTION)
@@ -32,6 +32,7 @@ async def wait_pool(coros: list, *, use_semaphore: bool = True) -> list[Any]:
         i.cancel()
 
     for i in done:
-        if isinstance(i.exception(), Exception): #ignore BaseException
-            raise i.exception
+        exc = i.exception()
+        if exc is not None:
+            raise exc
     return [i.result() for i in done]

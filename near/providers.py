@@ -1,5 +1,5 @@
 import base64
-from typing import Self
+from typing import Any, Self
 
 import aiohttp
 
@@ -10,7 +10,9 @@ class FinalityTypes:
 
 
 class JsonProviderError(Exception):
-    pass
+    def __init__(self, error: Any):
+        self.error = error
+        super().__init__(f'Provider error: {error!r}')
 
 
 class JsonProvider:
@@ -122,7 +124,7 @@ class JsonProvider:
 
     async def get_block(
             self,
-            block_id: str | None = None,
+            block_id: str | int | None = None,
             finality: str | None = None,
             timeout: aiohttp.ClientTimeout | None = None,
     ) -> dict:

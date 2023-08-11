@@ -2,7 +2,7 @@ import copy
 from dataclasses import asdict, dataclass, field
 from typing import TypeVar
 
-from accounts.types import InnerTaskInfo, ListTaskInfo, Pillar, Review
+from accounts.types import InnerTaskInfo, ListTaskInfo, PillarInfo, ReviewInfo
 
 T = TypeVar('T')
 
@@ -13,11 +13,11 @@ def generate_task_id() -> int:
     return task_iter
 
 
-def make_review(verdict: int, before_resubmit: int, mine: bool) -> Review:
+def make_review(verdict: int, before_resubmit: int, mine: bool) -> ReviewInfo:
     data = {'verdict': verdict, 'comment': '', 'mine': mine, 'before_resubmit': before_resubmit}
     if before_resubmit is None:
         data.pop('before_resubmit')
-    return Review(data)
+    return ReviewInfo(data)
 
 
 @dataclass
@@ -28,10 +28,10 @@ class Info:
     quality: int
     status: int
 
-    pillar: Pillar | None
+    pillar: PillarInfo | None
     resubmits: int
     reward: int
-    reviews: list[Review]
+    reviews: list[ReviewInfo]
     ideas: list[dict]
 
 
@@ -64,7 +64,7 @@ class FakeSingleAccount:
         assert_unique([(i.mode, i.task_id) for i in tasks])
         assert_unique([p.pillar_id for p in self._pillars()])
 
-    def _pillars(self) -> list[Pillar]:
+    def _pillars(self) -> list[PillarInfo]:
         return [i.pillar for i in self.tasks if i.pillar is not None]
 
     async def get_task(self, mode: int, task_id: int, _ = None) -> InnerTaskInfo | None:
@@ -73,5 +73,5 @@ class FakeSingleAccount:
     async def get_task_list(self, mode: int, _ = None) -> list[ListTaskInfo]:
         return [i.convert(ListTaskInfo) for i in self.tasks if i.mode == mode]
 
-    async def get_pillar(self, pillar_id: int) -> Pillar | None:
+    async def get_pillar(self, pillar_id: int) -> PillarInfo | None:
         return copy.deepcopy(next((i for i in self._pillars() if i.pillar_id == pillar_id), None))

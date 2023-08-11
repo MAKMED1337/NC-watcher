@@ -21,25 +21,27 @@ class ListTaskInfo:
         self.short_descr = data['short_descr']
         self.status = data['status']
 
+
 @dataclass
-class Review:
-    verdict: int #0/1
+class ReviewInfo:
+    verdict: int #0 / 1
     comment: str
     mine: bool
-    before_resubmit: bool | None #None on your task review
+    before_resubmit: bool #True on your task review
 
     def __init__(self, data: dict) -> None:
         self.verdict = data['verdict']
         self.comment = data['comment']
         self.mine = data['mine']
-        self.before_resubmit = bool(data['before_resubmit']) if 'before_resubmit' in data else None
+        self.before_resubmit = bool(data.get('before_resubmit', True))
+
 
 @dataclass
 class InnerTaskInfo:
     pillar_id: int | None
     resubmits: int
     reward: int
-    reviews: list[Review]
+    reviews: list[ReviewInfo]
     comment: str | None
     ideas: list[dict]
     short_descr: str
@@ -48,13 +50,14 @@ class InnerTaskInfo:
         self.pillar_id = data.get('pillar_id')
         self.resubmits = data['resubmits']
         self.reward = data['reward']
-        self.reviews = [Review(r) for r in data['reviews']]
+        self.reviews = [ReviewInfo(r) for r in data['reviews']]
         self.comment = data['comment']
         self.ideas = data.get('nightsky_requests', [])
         self.short_descr = data['short_descr']
 
+
 @dataclass
-class Status:
+class StatusInfo:
     can_claim_review_in: timedelta | None #if banned equals None
     can_claim_task_in: timedelta | None #if banned equals None
     review_penalties: int | None #if banned equals None
@@ -69,13 +72,14 @@ class Status:
         return timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
 
     def __init__(self, data: dict) -> None:
-        self.can_claim_review_in = Status.time_or_none(data.get('can_claim_review_in'))
-        self.can_claim_task_in = Status.time_or_none(data.get('can_claim_task_in'))
+        self.can_claim_review_in = StatusInfo.time_or_none(data.get('can_claim_review_in'))
+        self.can_claim_task_in = StatusInfo.time_or_none(data.get('can_claim_task_in'))
         self.review_penalties = data.get('review_penalties', None)
         self.status = data['status']
 
+
 @dataclass
-class ModMessage:
+class ModMessageInfo:
     id: int
     msg: str
 
@@ -83,8 +87,9 @@ class ModMessage:
         self.id = data['id']
         self.msg = data['msg']
 
+
 @dataclass
-class Chapter:
+class ChapterInfo:
     kind: str
     #add more fields if needed
 
@@ -94,15 +99,16 @@ class Chapter:
     def is_exercise(self) -> bool:
         return self.kind in ('Exercise', 'Problem')
 
+
 @dataclass
-class Pillar:
+class PillarInfo:
     pillar_id: int
-    chapter: list[Chapter]
+    chapter: list[ChapterInfo]
     #add more fields if needed
 
     def __init__(self, data: dict) -> None:
         self.pillar_id = data['pillar_id']
-        self.chapter = [Chapter(i) for i in (data['chapter'] or [])]
+        self.chapter = [ChapterInfo(i) for i in (data['chapter'] or [])]
 
     @property
     def num_exercises(self) -> int:
