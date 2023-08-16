@@ -1,4 +1,5 @@
 import hashlib
+from typing import Annotated
 
 from . import signer
 from .serializer import BinarySerializer
@@ -25,12 +26,12 @@ class AccessKey:
 
 class PublicKey:
     key_type: int
-    data: bytes
+    data: Annotated[bytes, 32]
 
 
 class Signature:
     key_type: int
-    data: bytes
+    data: Annotated[bytes, 64]
 
 
 class CreateAccount:
@@ -79,7 +80,7 @@ class Transaction:
     public_key: PublicKey
     nonce: int
     receiver_id: str
-    block_hash: bytes
+    block_hash: Annotated[bytes, 32]
     actions: list[Action]
 
 
