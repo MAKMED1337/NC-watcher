@@ -92,6 +92,7 @@ def feq(a: float, b: float) -> bool:
     insignificant_error = 3
     return abs(a - b) <= insignificant_error #because of NC's internal rounds, it's probably will not hurt
 
+
 class IAction:
     info: FullTaskInfo
 
@@ -123,6 +124,7 @@ class IAction:
 
     def calculate_cost(self) -> int:
         raise NotImplementedError
+
 
 class Task(IAction):
     pillar: PillarInfo | None
@@ -215,6 +217,7 @@ class Task(IAction):
         cost *= quality_coef #quality(LQ/OS)
         return int(cost)
 
+
 class Review(IAction):
     @staticmethod
     def is_proto(info: ListTaskInfo) -> bool:
@@ -262,17 +265,17 @@ class Review(IAction):
 
     def calculate_cost(self) -> int:
         info = self.info
-        assert all(0 <= r.before_resubmit <= 1 for r in info.reviews)
 
         my_verdict = info.my_verdict
         status = info.status
         review = self.get_my_review()
         assert review
 
-        correct_verdict = review.before_resubmit == 0 and status == Status.accept
+        correct_verdict = not review.before_resubmit and status == Status.accept
         return int(info.reward * int(my_verdict == correct_verdict))
 
 action_prototypes: list[IAction] = [Task(), Review()]
+
 
 def get_proto_by_enum(db_type: ActionEnum) -> IAction:
     for i in action_prototypes:
@@ -280,11 +283,13 @@ def get_proto_by_enum(db_type: ActionEnum) -> IAction:
             return i
     raise AssertionError
 
+
 async def load_action_by_info(account: SingleAccountsClient, info: ListTaskInfo) -> IAction:
     for i in action_prototypes:
         if i.is_proto(info):
             return await i.load(account, info)
     raise AssertionError
+
 
 def get_payment_cost(reward: UnpaidRewards) -> int:
     if reward.action is ActionEnum.task:
@@ -295,6 +300,5 @@ def get_payment_cost(reward: UnpaidRewards) -> int:
 
     assert 0 <= adjustment <= 2  # noqa: PLR2004
     if adjustment == 0:
-        msg = 'IDK, probably -25%'
-        raise AssertionError(msg)
+        raise AssertionError('IDK, probably -25%')
     return int((1 + deviation * (adjustment - 1)) * reward.cost)

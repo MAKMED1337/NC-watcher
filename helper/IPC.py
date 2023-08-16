@@ -74,6 +74,7 @@ class Connection:
 class Client(Connection):
     def __init__(self, port: int) -> None:
         self._port = port
+        super().__init__(None, None)
 
     async def connect(self) -> bool:
         if self._connected:
@@ -115,7 +116,7 @@ class FuncConnection(_LoopBoundMixin):
     _waiters: dict[int, asyncio.Future]
     _ready: dict[int, Any]
 
-    def __init__(self, conn: Connection) -> None:
+    def __init__(self, conn: Connection):
         self._conn = conn
         self._read_lock = asyncio.Lock()
         self._waiters = {}
@@ -186,7 +187,7 @@ class FuncConnection(_LoopBoundMixin):
 class Response(Packet):
     _conn: Connection
 
-    def __init__(self, conn: Connection, packet: Packet) -> None:
+    def __init__(self, conn: Connection, packet: Packet):
         Packet.__init__(self, packet.id, packet.data)
         self._conn = conn
 
@@ -197,7 +198,7 @@ class Response(Packet):
 
 
 class FuncClient(Client, FuncConnection):
-    def __init__(self, port: int) -> None:
+    def __init__(self, port: int):
         super().__init__(port)
         FuncConnection.__init__(self, self)
 

@@ -16,7 +16,7 @@ from .config import block_logger_interval
 from .processed_blocks import ProcessedBlocks
 from .unpaid_rewards import ActionEnum, UnpaidRewards
 
-coef: float
+coef: float = 1.1  #FIXME: declare but not assign
 
 def set_coef(c: float) -> None:
     global coef

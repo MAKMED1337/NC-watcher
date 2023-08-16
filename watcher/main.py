@@ -16,6 +16,7 @@ from .unpaid_rewards import ActionEnum, UnpaidRewards
 block_logger = None
 wrong_review_watcher = None
 
+
 async def fetch_coef() -> None:
     for _i in range(100):
         async with AccountsClient([]) as c:
@@ -24,8 +25,8 @@ async def fetch_coef() -> None:
                 set_coef(coef)
                 return
         await asyncio.sleep(1)
-    msg = 'Too many tries to fetch coef'
-    raise Exception(msg)  # noqa: TRY002
+    raise Exception('Too many tries to fetch coef')  # noqa: TRY002
+
 
 async def review_watcher() -> None:
     while True:
@@ -34,6 +35,7 @@ async def review_watcher() -> None:
             tasks.append(resolve_and_pay(account_id, ActionEnum.review))
         await wait_pool(tasks)
         await asyncio.sleep(review_watcher_interval.seconds)
+
 
 async def start() -> None:
     global block_logger, wrong_review_watcher
@@ -48,6 +50,7 @@ async def start() -> None:
     block_logger = asyncio.create_task(last_block_logger())
     wrong_review_watcher = asyncio.create_task(review_watcher())
 
+
 async def main() -> None:
     await start()
     while True:
@@ -60,6 +63,7 @@ async def main() -> None:
             tasks.append(resolve_and_pay(account_id, action))
         await wait_pool(tasks)
 
+
 async def stop() -> None:
     await provider.close()
     await stop_reporter()
@@ -67,6 +71,7 @@ async def stop() -> None:
         block_logger.cancel()
     if wrong_review_watcher is not None:
         wrong_review_watcher.cancel()
+
 
 if __name__ == '__main__':
     main_handler(main, report_exception, stop)

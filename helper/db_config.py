@@ -19,10 +19,12 @@ Base = declarative_base()
 engine = sqlalchemy.create_engine(connection_url)
 db = databases.Database(connection_url.set(drivername='mysql+asyncmy', query={'pool_recycle': '3600'}).render_as_string(False))
 
+
 class AttrDict(dict):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.__dict__ = self
+
 
 def to_mapping(table: Base) -> AttrDict:
     try:
@@ -34,6 +36,7 @@ def to_mapping(table: Base) -> AttrDict:
     for i in keys:
         res[i] = getattr(table, i)
     return res
+
 
 async def start() -> None:
     Base.metadata.create_all(engine)
