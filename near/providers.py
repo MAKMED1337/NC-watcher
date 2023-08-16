@@ -16,6 +16,8 @@ class JsonProviderError(Exception):
 
 
 class JsonProvider:
+    _session: aiohttp.ClientSession | None
+
     def __init__(self, rpc_addr: str) -> None:
         self._rpc_addr = rpc_addr
         self._session = None
@@ -25,7 +27,8 @@ class JsonProvider:
             self._session = aiohttp.ClientSession()
 
     async def close(self) -> None:
-        await self._session.close()
+        if self._session:
+            await self._session.close()
 
     async def __aenter__(self) -> Self:
         return self
@@ -44,6 +47,7 @@ class JsonProvider:
             'jsonrpc': '2.0',
         }
 
+        assert self._session
         async with self._session.post(self.rpc_addr(), json=j, timeout=timeout) as resp:
             resp.raise_for_status()
             content = await resp.json()
@@ -58,6 +62,7 @@ class JsonProvider:
         return await self.json_rpc('broadcast_tx_commit', [base64.b64encode(signed_tx).decode('utf8')], timeout)
 
     async def get_status(self, timeout: aiohttp.ClientTimeout | None = None) -> dict:
+        assert self._session
         async with self._session.get(f'{self.rpc_addr()}/status', timeout=timeout) as resp:
             resp.raise_for_status()
             return await resp.json()

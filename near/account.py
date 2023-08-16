@@ -3,6 +3,7 @@ import json
 from typing import Any
 
 import base58
+from aiohttp import ClientTimeout
 
 from . import providers, signer, transactions
 
@@ -37,7 +38,7 @@ class Account:
 
     async def _sign_and_submit_tx(self, receiver_id: str, actions: list[transactions.Action]) -> dict:
         serialized_tx = await self.get_tx(receiver_id, actions)
-        result: dict = await self._provider.send_tx_and_wait(serialized_tx, 10)
+        result: dict = await self._provider.send_tx_and_wait(serialized_tx, ClientTimeout(10))
         for outcome in itertools.chain([result['transaction_outcome']], result['receipts_outcome']):
             for log in outcome['outcome']['logs']:
                 print('Log:', log)
@@ -94,7 +95,7 @@ class Account:
             [transactions.create_function_call_action(method_name, args, gas, amount)],
         )
 
-    async def create_account(self, account_id: str, public_key: str, initial_balance: int) -> dict:
+    async def create_account(self, account_id: str, public_key: bytes, initial_balance: int) -> dict:
         actions = [
             transactions.create_create_account_action(),
             transactions.create_full_access_key_action(public_key),
@@ -108,13 +109,13 @@ class Account:
     async def deploy_contract(self, contract_code: bytes) -> dict:
         return await self._sign_and_submit_tx(self._account_id, [transactions.create_deploy_contract_action(contract_code)])
 
-    async def stake(self, public_key: str, amount: int) -> dict:
+    async def stake(self, public_key: bytes, amount: int) -> dict:
         return await self._sign_and_submit_tx(self._account_id, [transactions.create_staking_action(amount, public_key)])
 
     async def create_and_deploy_contract(
             self,
             contract_id: str,
-            public_key: str,
+            public_key: bytes,
             contract_code: bytes,
             initial_balance: int,
     ) -> dict:
@@ -128,7 +129,7 @@ class Account:
     async def create_deploy_and_init_contract(
             self,
             contract_id: str,
-            public_key: str,
+            public_key: bytes,
             contract_code: bytes,
             initial_balance: int,
             args: bytes,

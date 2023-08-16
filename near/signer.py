@@ -1,10 +1,8 @@
 import json
-from typing import TypeVar
+from typing import Self
 
 import base58
 import ed25519
-
-T = TypeVar('T')
 
 
 class KeyPair:
@@ -20,8 +18,7 @@ class KeyPair:
             secret_key = secret_key.split(':')[-1]
             self._secret_key = ed25519.keys.SigningKey(base58.b58decode(secret_key))
         else:
-            msg = 'Unrecognised'
-            raise TypeError(msg)
+            raise TypeError('Unrecognised')
         self._public_key = self._secret_key.get_verifying_key()
 
     @property
@@ -32,7 +29,7 @@ class KeyPair:
     def encoded_public_key(self) -> str:
         return base58.b58encode(self.public_key).decode('utf-8')
 
-    def sign(self, message: bytes) -> str:
+    def sign(self, message: bytes) -> bytes:
         return self._secret_key.sign(message)
 
     @property
@@ -69,14 +66,14 @@ class Signer:
     def public_key(self) -> bytes:
         return self._key_pair.public_key
 
-    def sign(self, message: bytes) -> str:
+    def sign(self, message: bytes) -> bytes:
         return self._key_pair.sign(message)
 
     @classmethod
-    def from_json(cls: type[T], j: dict) -> T:
+    def from_json(cls, j: dict) -> Self:
         return cls(j['account_id'], KeyPair(j['secret_key']))
 
     @classmethod
-    def from_json_file(cls: type[T], json_file: str) -> T:
+    def from_json_file(cls, json_file: str) -> Self:
         with open(json_file) as f:
             return cls.from_json(json.loads(f.read()))
