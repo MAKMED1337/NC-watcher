@@ -6,8 +6,8 @@ from .serializer import BinarySerializer
 
 class FunctionCallPermission:
     allowance: int | None
-    receiverId: str
-    methodNames: list[str]
+    receiver_id: str
+    method_names: list[str]
 
 
 class FullAccessPermission:
@@ -24,12 +24,12 @@ class AccessKey:
 
 
 class PublicKey:
-    keyType: int
+    key_type: int
     data: bytes
 
 
 class Signature:
-    keyType: int
+    key_type: int
     data: bytes
 
 
@@ -42,7 +42,7 @@ class DeployContract:
 
 
 class FunctionCall:
-    methodName: str
+    method_name: str
     args: bytes
     gas: int
     deposit: int
@@ -54,20 +54,20 @@ class Transfer:
 
 class Stake:
     stake: int
-    publicKey: PublicKey
+    public_key: PublicKey
 
 
 class AddKey:
-    accessKey: AccessKey
-    publicKey: PublicKey
+    access_key: AccessKey
+    public_key: PublicKey
 
 
 class DeleteKey:
-    publicKey: PublicKey
+    public_key: PublicKey
 
 
 class DeleteAccount:
-    beneficiaryId: str
+    beneficiary_id: str
 
 
 class Action:
@@ -75,11 +75,11 @@ class Action:
 
 
 class Transaction:
-    signerId: str
-    publicKey: PublicKey
+    signer_id: str
+    public_key: PublicKey
     nonce: int
-    receiverId: str
-    blockHash: bytes
+    receiver_id: str
+    block_hash: bytes
     actions: list[Action]
 
 
@@ -92,7 +92,7 @@ tx_schema = {
     Signature: {
         'kind': 'struct',
         'fields': [
-            ['keyType', 'u8'],
+            ['key_type', 'u8'],
             ['data', [64]],
         ],
     },
@@ -106,18 +106,18 @@ tx_schema = {
     Transaction: {
         'kind': 'struct',
         'fields': [
-            ['signerId', 'string'],
+            ['signer_id', 'string'],
             ['publicKey', PublicKey],
             ['nonce', 'u64'],
-            ['receiverId', 'string'],
-            ['blockHash', [32]],
+            ['receiver_id', 'string'],
+            ['block_hash', [32]],
             ['actions', [Action]],
         ],
     },
     PublicKey: {
         'kind': 'struct',
         'fields': [
-            ['keyType', 'u8'],
+            ['key_type', 'u8'],
             ['data', [32]],
         ],
     },
@@ -140,8 +140,8 @@ tx_schema = {
         'kind': 'struct',
         'fields': [
             ['allowance', {'kind': 'option', type: 'u128'}],
-            ['receiverId', 'string'],
-            ['methodNames', ['string']],
+            ['receiver_id', 'string'],
+            ['method_names', ['string']],
         ],
     },
     FullAccessPermission: {
@@ -175,7 +175,7 @@ tx_schema = {
     FunctionCall: {
         'kind': 'struct',
         'fields': [
-            ['methodName', 'string'],
+            ['method_name', 'string'],
             ['args', ['u8']],
             ['gas', 'u64'],
             ['deposit', 'u128'],
@@ -191,27 +191,27 @@ tx_schema = {
         'kind': 'struct',
         'fields': [
             ['stake', 'u128'],
-            ['publicKey', PublicKey],
+            ['public_key', PublicKey],
         ],
     },
     AddKey: {
         'kind': 'struct',
         'fields': [
-            ['publicKey', PublicKey],
-            ['accessKey', AccessKey],
+            ['public_key', PublicKey],
+            ['access_key', AccessKey],
         ],
     },
     DeleteKey: {
         'kind': 'struct',
         'fields': [
-            ['publicKey', PublicKey],
+            ['public_key', PublicKey],
         ],
     },
     DeleteAccount:
     {
         'kind': 'struct',
         'fields': [
-            ['beneficiaryId', 'string'],
+            ['beneficiary_id', 'string'],
         ],
     },
 }
@@ -227,20 +227,20 @@ def sign_and_serialize_transaction(
     assert signer.public_key is not None    # TODO: Need to replace to Exception
     assert block_hash is not None    # TODO: Need to replace to Exception
     tx = Transaction()
-    tx.signerId = signer.account_id
-    tx.publicKey = PublicKey()
-    tx.publicKey.keyType = 0
-    tx.publicKey.data = signer.public_key
+    tx.signer_id = signer.account_id
+    tx.public_key = PublicKey()
+    tx.public_key.key_type = 0
+    tx.public_key.data = signer.public_key
     tx.nonce = nonce
-    tx.receiverId = receiver_id
+    tx.receiver_id = receiver_id
     tx.actions = actions
-    tx.blockHash = block_hash
+    tx.block_hash = block_hash
 
     msg: bytes = BinarySerializer(tx_schema).serialize(tx)
     hash_: bytes = hashlib.sha256(msg).digest()
 
     signature = Signature()
-    signature.keyType = 0
+    signature.key_type = 0
     signature.data = signer.sign(hash_)
 
     signed_tx = SignedTransaction()
@@ -259,7 +259,7 @@ def create_create_account_action() -> Action:
 
 def create_delete_account_action(beneficiary_id: str) -> Action:
     delete_account = DeleteAccount()
-    delete_account.beneficiaryId = beneficiary_id
+    delete_account.beneficiary_id = beneficiary_id
     action = Action()
     action.enum = delete_account
     return action
@@ -272,11 +272,11 @@ def create_full_access_key_action(pk: bytes) -> Action:
     access_key.nonce = 0
     access_key.permission = permission
     public_key = PublicKey()
-    public_key.keyType = 0
+    public_key.key_type = 0
     public_key.data = pk
     add_key = AddKey()
-    add_key.accessKey = access_key
-    add_key.publicKey = public_key
+    add_key.access_key = access_key
+    add_key.public_key = public_key
     action = Action()
     action.enum = add_key
     return action
@@ -284,10 +284,10 @@ def create_full_access_key_action(pk: bytes) -> Action:
 
 def create_delete_access_key_action(pk: bytes) -> Action:
     public_key = PublicKey()
-    public_key.keyType = 0
+    public_key.key_type = 0
     public_key.data = pk
     delete_key = DeleteKey()
-    delete_key.publicKey = public_key
+    delete_key.public_key = public_key
     action = Action()
     action.enum = delete_key
     return action
@@ -308,9 +308,9 @@ create_payment_action = create_transfer_action
 def create_staking_action(amount: int, pk: bytes) -> Action:
     stake = Stake()
     stake.stake = amount
-    stake.publicKey = PublicKey()
-    stake.publicKey.keyType = 0
-    stake.publicKey.data = pk
+    stake.public_key = PublicKey()
+    stake.public_key.key_type = 0
+    stake.public_key.data = pk
     action = Action()
     action.enum = stake
     return action
@@ -326,7 +326,7 @@ def create_deploy_contract_action(code: bytes) -> Action:
 
 def create_function_call_action(method_name: str, args: bytes, gas: int, deposit: int) -> Action:
     function_call = FunctionCall()
-    function_call.methodName = method_name
+    function_call.method_name = method_name
     function_call.args = args
     function_call.gas = gas
     function_call.deposit = deposit
