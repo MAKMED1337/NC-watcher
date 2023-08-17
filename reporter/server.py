@@ -1,5 +1,4 @@
 import asyncio
-import os
 import traceback
 from pathlib import Path
 
@@ -13,8 +12,8 @@ from helper.IPC import Connection, Server
 from helper.main_handler import main_handler
 
 from .config import PORT
+from .env import env
 
-GROUP_ID = int(os.getenv('GROUP_ID'))
 reports = Path(__file__).parent / 'reports'
 
 
@@ -25,7 +24,7 @@ def invalidate_index() -> None:
 
 
 # returns path to file
-def create_file() -> None:
+def create_file() -> Path:
     global log_index
 
     reports.mkdir(parents=True, exist_ok=True)
@@ -51,7 +50,7 @@ async def report(message: str) -> None:
     message = message.replace('<', '&lt').replace('>', '&gt')
     text = text.replace('{}', message[:max_message_len])
 
-    await bot.send_message(GROUP_ID, text)
+    await bot.send_message(env.group_id, text)
 
 
 @bot.on(events.NewMessage(pattern='/close$'))
@@ -96,7 +95,7 @@ async def start_all() -> None:
     sd_notify.Notifier().ready()
 
     tasks = [asyncio.create_task(i) for i in [bot.run_until_disconnected(), server.run()]]
-    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+    done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
     for i in done:
         exc = i.exception()
         if exc is not None:
@@ -107,4 +106,4 @@ async def stop_all() -> None:
     await server.close()
 
 if __name__ == '__main__':
-    main_handler(start_all, report, stop_all)
+    main_handler(start_all, exception_handler, stop_all)

@@ -36,4 +36,5 @@ builtins-ignorelist = ["id", "type"]
 
 [tool.mypy]
 allow_redefinition = true
-plugins = ["sqlalchemy.ext.mypy.plugin"]
+plugins = ["sqlalchemy.ext.mypy.plugin", "pydantic.mypy"]
+ignore_missing_imports = true
