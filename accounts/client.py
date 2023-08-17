@@ -28,7 +28,7 @@ def identity(x: T) -> T:
     return x
 
 
-def typify(cls: type[T]) -> Callable[[str | None], T | None]:
+def typify(cls: Callable[[dict], T]) -> Callable[[str | None], T | None]:
     def f(j: str | None) -> T | None:
         j = json_or_none(j)
         return cls(j) if j is not None else None
@@ -73,7 +73,11 @@ class AccountsClient(FuncClient):
         return await self.call(on_exception, 'verify_keys', account_id)
 
 
-    async def _query(self, q: V2, params: QueryParams = QueryParams(), callback: Callable[[str | None], T]=identity) -> Accounts[T]:
+    async def _query(
+            self,
+            q: V2, params: QueryParams = QueryParams(),
+            callback: Callable[[str | None], T]=identity,  # type: ignore[assignment]
+            ) -> Accounts[T]:
         if params.retries is not None:
             q.retry_count = params.retries
         return {k: callback(v) for k, v in (await self.call(params.on_exception, 'query', q)).items()}

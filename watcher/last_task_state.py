@@ -1,4 +1,4 @@
-from sqlalchemy import BOOLEAN, INTEGER, VARCHAR, select
+from sqlalchemy import VARCHAR, select
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -8,8 +8,8 @@ from helper.db_config import Base, db, to_mapping
 class LastTaskState(Base):
     __tablename__ = 'LastTaskState'
     account_id: Mapped[str] = mapped_column(VARCHAR(64), primary_key=True)
-    task_id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
-    ended: Mapped[bool] = mapped_column(BOOLEAN, nullable=False, default=False, server_default='0')
+    task_id: Mapped[int] = mapped_column(primary_key=True)
+    ended: Mapped[bool] = mapped_column(nullable=False, default=False, server_default='0')
     resubmits: Mapped[int | None]
 
     @staticmethod

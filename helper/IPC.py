@@ -1,18 +1,16 @@
 import asyncio
 import pickle
-from asyncio.mixins import _LoopBoundMixin
 from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Generic, Self, TypeVar
+from typing import Any, Generic, Self, TypeVar, no_type_check
 
-T = TypeVar('T')
 
 class Connection:
     _reader: asyncio.StreamReader | None
     _writer: asyncio.StreamWriter | None
 
-    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    def __init__(self, reader: asyncio.StreamReader | None, writer: asyncio.StreamWriter | None):
         self._reader = reader
         self._writer = writer
 
@@ -24,6 +22,7 @@ class Connection:
     def connected(self) -> bool:
         return self._connected
 
+    @no_type_check  # mypy false alarm on reader/writer is none
     async def close(self) -> None:
         if not self._connected:
             return
@@ -38,14 +37,18 @@ class Connection:
     async def __aexit__(self, *_) -> None:
         await self.close()
 
+    @no_type_check  # mypy false alarm on reader/writer is none
     def is_active(self) -> bool:
-        if not self._connected or self._reader.at_eof(): #not sure about eof
+        if not self._connected or self._reader.at_eof(): # not sure about eof
             return False
         return True
 
+    @no_type_check  # mypy false alarm on reader/writer is none
     async def send(self, obj: Any, drain_immediately: bool = True) -> None:
-        data = pickle.dumps(obj)
+        if not self._connected:
+            return
 
+        data = pickle.dumps(obj)
         with suppress(Exception):
             self._writer.write(len(data).to_bytes(4, 'big'))
             self._writer.write(data)
@@ -53,10 +56,9 @@ class Connection:
             if drain_immediately:
                 await self._writer.drain()
 
-    #At most waits 2 * timeout, timeout in seconds
+    # At most waits 2 * timeout, timeout in seconds
+    @no_type_check  # mypy false alarm on reader/writer is none
     async def read(self, on_exception: Any = Exception, *, timeout: float | None = None) -> Any:
-        assert self._connected
-
         try:
             length = int.from_bytes(await asyncio.wait_for(self._reader.readexactly(4), timeout), 'big')
             return pickle.loads(await asyncio.wait_for(self._reader.readexactly(length), timeout))
@@ -65,10 +67,11 @@ class Connection:
                 raise
             return on_exception
 
-    def __del__(self) -> None:
+    @no_type_check  # mypy false alarm on reader/writer is none
+    def __del__(self):
         if self._connected:
             with suppress(Exception):
-                self._writer.close() #probably unsafe, but better than assert False
+                self._writer.close()  # probably unsafe, but better than assert False
 
 
 class Client(Connection):
@@ -110,7 +113,7 @@ class Packet:
     data: Any
 
 
-class FuncConnection(_LoopBoundMixin):
+class FuncConnection:
     last_id: int = 0
     _read_lock: asyncio.Lock
     _waiters: dict[int, asyncio.Future]
@@ -156,7 +159,7 @@ class FuncConnection(_LoopBoundMixin):
         if my_id in self._ready:
             return self._ready.pop(my_id)
 
-        fut = self._get_loop().create_future()
+        fut = asyncio.get_event_loop().create_future()
         self._waiters[my_id] = fut
 
         try:
@@ -203,6 +206,7 @@ class FuncClient(Client, FuncConnection):
         FuncConnection.__init__(self, self)
 
 
+T = TypeVar('T', bound=Connection)
 class Server(Generic[T]):
     _connections: set[T]
     _connection_handlers: set[Callable[[T], Awaitable]]
@@ -213,7 +217,7 @@ class Server(Generic[T]):
     def __init__(
             self,
             port: int,
-            connection_class: Callable[[asyncio.StreamReader, asyncio.StreamWriter], T] = Connection,
+            connection_class: type[T] = Connection,
             exception_handler: Callable[[Exception], Any] | None = None):
         self._port = port
         self._connection_class = connection_class
@@ -277,7 +281,7 @@ class Server(Generic[T]):
             raise self._exception
 
     async def close(self) -> None:
-        if self._closed:
+        if self._closed or not self._server:
             return
         self._closed = True
 

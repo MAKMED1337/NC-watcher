@@ -4,7 +4,7 @@ from typing import Any
 import databases
 import sqlalchemy
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 connection_url = URL.create(
     'mysql',
@@ -15,7 +15,9 @@ connection_url = URL.create(
     os.getenv('DB_NAME'),
 )
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
+
 engine = sqlalchemy.create_engine(connection_url)
 db = databases.Database(connection_url.set(drivername='mysql+asyncmy', query={'pool_recycle': '3600'}).render_as_string(False))
 

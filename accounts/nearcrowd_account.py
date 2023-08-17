@@ -80,7 +80,11 @@ class NearCrowdAccount:
         post = q.post
 
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-            request = session.get(url) if post is None else session.post(url, **{post.type: post.data}, headers={'Content-Type': 'application/json'})
+            if post is None:
+                request = session.get(url)
+            else:
+                post_kwargs: dict[str, Any] = {post.type: post.data}
+                request = session.post(url, **post_kwargs, headers={'Content-Type': 'application/json'})
 
             async with request as response:
                 text = await response.text()
