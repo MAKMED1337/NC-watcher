@@ -1,13 +1,14 @@
-from sqlalchemy import VARCHAR, Column, and_, delete, select
+from sqlalchemy import VARCHAR, and_, delete, select
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.orm import Mapped, mapped_column
 
 from helper.db_config import Base, db
 
 
 class Accounts(Base):
     __tablename__ = 'Accounts'
-    account_id = Column(VARCHAR(64), primary_key=True)
-    private_key = Column(VARCHAR(96), primary_key=True)
+    account_id: Mapped[str] = mapped_column(VARCHAR(64), primary_key=True)
+    private_key: Mapped[str] = mapped_column(VARCHAR(96), primary_key=True)
 
     #returns random key, that connected
     @staticmethod

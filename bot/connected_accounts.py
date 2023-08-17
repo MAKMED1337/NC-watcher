@@ -1,16 +1,17 @@
 from typing import Any
 
-from sqlalchemy import VARCHAR, BigInteger, Column, and_, delete, select
+from sqlalchemy import VARCHAR, BigInteger, and_, delete, select
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.orm import Mapped, mapped_column
 
 from helper.db_config import Base, db
 
 
 class ConnectedAccounts(Base):
     __tablename__ = 'ConnectedAccounts'
-    tg_id = Column(BigInteger, primary_key=True)
-    account_id = Column(VARCHAR(64), primary_key=True)
-    private_key = Column(VARCHAR(96), nullable=False)
+    tg_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    account_id: Mapped[str] = mapped_column(VARCHAR(64), primary_key=True)
+    private_key: Mapped[str] = mapped_column(VARCHAR(96))
 
 
     @staticmethod

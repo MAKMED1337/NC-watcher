@@ -1,12 +1,14 @@
-from sqlalchemy import BOOLEAN, INTEGER, Column, func, insert, select, update
+from sqlalchemy import BigInteger, func, insert, select, update
+from sqlalchemy.orm import Mapped, mapped_column
 
 from helper.db_config import Base, db
 
 
 class ProcessedBlocks(Base):
     __tablename__ = 'ProcessedBlocks'
-    block_id = Column(INTEGER, primary_key=True)
-    processed = Column(BOOLEAN, nullable=False, default=False, server_default='0')
+
+    block_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    processed: Mapped[bool] = mapped_column(default=False, server_default='0')
 
     @staticmethod
     async def get_last_id() -> int | None:
