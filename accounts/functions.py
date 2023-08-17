@@ -5,7 +5,7 @@ from .accounts_db import Accounts
 from .nearcrowd_account import V2, NearCrowdAccount
 
 
-async def query(account: NearCrowdAccount, q: V2) -> str:
+async def query(account: NearCrowdAccount, q: V2) -> str | None:
     return await account.query(q)
 
 async def create_account(account_id: str, private_key: str) -> bool:
@@ -21,7 +21,7 @@ async def create_account(account_id: str, private_key: str) -> bool:
 async def is_connected(account_id: str) -> bool:
     return await Accounts.is_connected(account_id)
 
-async def get_coef() -> float:
+async def get_coef() -> float | None:
     return await NearCrowdAccount.get_coef()
 
 async def get_access_keys(account_id: str) -> list[str]:

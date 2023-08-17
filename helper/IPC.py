@@ -217,7 +217,7 @@ class Server(Generic[T]):
     def __init__(
             self,
             port: int,
-            connection_class: type[T] = Connection,
+            connection_class: type[T] = Connection,  # type: ignore[assignment]
             exception_handler: Callable[[Exception], Any] | None = None):
         self._port = port
         self._connection_class = connection_class

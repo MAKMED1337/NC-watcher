@@ -29,7 +29,7 @@ async def get_account(account_id: str) -> NearCrowdAccount | None:
 async def apply_accountless(call: FuncCall) -> Any:
     return await call.apply(globals()[call.name])
 
-async def apply_for_accounts(accounts: NearCrowdAccount | list[NearCrowdAccount], call: FuncCall) -> list[Any]:
+async def apply_for_accounts(accounts: list[NearCrowdAccount], call: FuncCall) -> list[Any]:
     return await asyncio.gather(*[call.apply(globals()[call.name], i) for i in accounts])
 
 async def get_accounts_list() -> list[NearCrowdAccount]:
@@ -68,6 +68,8 @@ def get_ids(accounts: list[NearCrowdAccount]) -> list[str]:
     return [i.account_id for i in accounts]
 
 class ConnectionHandler:
+    accounts: list[NearCrowdAccount]
+
     def __init__(self, conn: Connection) -> None:
         self.conn = conn
         self.accounts = []
@@ -124,7 +126,7 @@ async def start() -> None:
 
 async def stop() -> None:
     await provider.close()
-    await server.stop()
+    await server.close()
 
 if __name__ == '__main__':
-    main_handler(start, report_exception, server.close)
+    main_handler(start, report_exception, stop)
