@@ -1,11 +1,12 @@
 from sqlalchemy import BigInteger, Column, insert, select
+from sqlalchemy.orm import Mapped, mapped_column
 
 from helper.db_config import Base, db
 
 
 class AcknowledgedMessages(Base):
     __tablename__ = 'AcknowledgedMessages'
-    id = Column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     @staticmethod
     async def is_acknowledged(msg_id: int) -> bool:

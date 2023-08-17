@@ -33,8 +33,10 @@ async def main() -> None:
 
         await asyncio.sleep(timeout.seconds)
 
+
 async def stop() -> None:
     await stop_reporter()
+
 
 if __name__ == '__main__':
     main_handler(main, report_exception, stop)
