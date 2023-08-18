@@ -108,7 +108,7 @@ tx_schema = {
         'kind': 'struct',
         'fields': [
             ['signer_id', 'string'],
-            ['publicKey', PublicKey],
+            ['public_key', PublicKey],
             ['nonce', 'u64'],
             ['receiver_id', 'string'],
             ['block_hash', [32]],

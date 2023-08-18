@@ -52,7 +52,8 @@ class BinarySerializer:
             assert type(value) == field_type, f'{field_type} != type({value})'    # TODO: Need to replace to Exception
             self.serialize_struct(value)
 
-        raise AssertionError(type(field_type))    # TODO: Need to replace to Exception
+        else:
+            raise TypeError(type(field_type))    # TODO: Need to replace to Exception
 
     def serialize_struct(self, obj: Any) -> None:
         struct_schema = self.schema[type(obj)]
@@ -60,11 +61,9 @@ class BinarySerializer:
             for field_name, field_type in struct_schema['fields']:
                 self.serialize_field(getattr(obj, field_name), field_type)
         elif struct_schema['kind'] == 'enum':
-            for idx, field_type in enumerate(struct_schema['values']):
-                if type(obj.enum) == field_type:
-                    self.serialize_num(idx, 1)
-                    self.serialize_field(obj.enum, field_type)
-                    break
+            idx = struct_schema['values'].index(type(obj.enum))
+            self.serialize_num(idx, 1)
+            self.serialize_field(obj.enum, type(obj.enum))
         else:
             raise AssertionError(struct_schema)     # TODO: Need to replace to Exception
 
