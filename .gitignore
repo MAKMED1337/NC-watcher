@@ -5,6 +5,6 @@ sessionStorage.json
 reports*/
 reports/
 .vscode/
-backup-*.sql
+backup/*
 *.env
 *.ipynb

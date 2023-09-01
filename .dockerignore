@@ -2,4 +2,4 @@
 sessionStorage.json
 reports/
 .vscode/
-backup-*.sql
+backup/*
