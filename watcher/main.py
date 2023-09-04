@@ -18,7 +18,7 @@ wrong_review_watcher = None
 
 
 async def fetch_coef() -> None:
-    for _i in range(100):
+    for _ in range(100):
         async with AccountsClient([]) as c:
             coef = await c.get_coef(None)
             if coef is not None:
@@ -58,7 +58,7 @@ async def main() -> None:
         await process_new_blocks()
 
         actions = await UnpaidRewards.get_unpaid_action_types()
-        tasks = [asyncio.sleep(1)]
+        tasks = [asyncio.sleep(5)]
         for account_id, action in actions:
             tasks.append(resolve_and_pay(account_id, action))
         await wait_pool(tasks)
