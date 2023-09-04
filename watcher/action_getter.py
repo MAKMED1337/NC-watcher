@@ -20,7 +20,8 @@ async def get_diff(action: Awaitable[IAction], state: LastTaskState) -> tuple[li
 
 async def get_updates_for_mode(account: SingleAccountsClient, mode: int, states: dict[int, LastTaskState], action_type: IAction) -> tuple[list[IAction], list[LastTaskState]]: # noqa: E501
     ended_ids = {i.task_id for i in states.values() if i.ended}
-    tasks = [r for r in await account.get_task_list(mode) if r.task_id not in ended_ids]
+
+    tasks = [r for r in (await account.get_task_list(mode) or []) if r.task_id not in ended_ids]
 
     updates = []
     for info in tasks:
